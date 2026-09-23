@@ -1,0 +1,1850 @@
+<title>サッと食レポ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --paper:#F5F0E6; --surface:#FFFDF8; --surface-2:#EFE8DA;
+    --ink:#2C2721; --muted:#7C7264; --hair:#E2D9C8; --hair-strong:#D3C7B1;
+    --accent:#9B3B4E; --accent-soft:#F2E1E1; --accent-ink:#7C2C3D;
+    --gold:#B9862F; --matcha:#5F6B36; --pos:#4B7A46; --neg:#B26B1E;
+    --shadow:rgba(44,39,33,.10); --radius:16px;
+  }
+  :root:not([data-theme="light"]){
+    @media (prefers-color-scheme: dark){
+      --paper:#181410; --surface:#221D18; --surface-2:#2C2620;
+      --ink:#EFE7D9; --muted:#A99C89; --hair:#352E26; --hair-strong:#443B30;
+      --accent:#D98297; --accent-soft:#3A2027; --accent-ink:#E7A6B4;
+      --gold:#D6A653; --matcha:#9FA96A; --pos:#8CB97C; --neg:#DDA25A; --shadow:rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#181410; --surface:#221D18; --surface-2:#2C2620;
+    --ink:#EFE7D9; --muted:#A99C89; --hair:#352E26; --hair-strong:#443B30;
+    --accent:#D98297; --accent-soft:#3A2027; --accent-ink:#E7A6B4;
+    --gold:#D6A653; --matcha:#9FA96A; --pos:#8CB97C; --neg:#DDA25A; --shadow:rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN",system-ui,sans-serif;
+    line-height:1.75;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:560px;margin:0 auto;padding:0 16px 80px;}
+  header.app{text-align:center;padding:26px 0 14px;}
+  .brand{font-family:"Shippori Mincho B1",serif;font-weight:700;font-size:30px;letter-spacing:.04em;margin:0;}
+  .brand .dot{color:var(--accent);}
+  .tagline{color:var(--muted);font-size:13px;margin:6px 0 0;letter-spacing:.02em;}
+  .ver{display:inline-block;margin-top:8px;font-size:11px;color:var(--muted);background:var(--surface-2);
+    border:1px solid var(--hair);border-radius:999px;padding:3px 11px;letter-spacing:.03em;}
+  .card{background:var(--surface);border:1px solid var(--hair);border-radius:var(--radius);
+    padding:20px 18px;margin-bottom:18px;box-shadow:0 1px 2px var(--shadow);}
+  .step-label{display:flex;align-items:center;gap:10px;font-family:"Shippori Mincho B1",serif;
+    font-size:17px;font-weight:700;margin:0 0 16px;}
+  .step-num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;
+    font-family:"Zen Kaku Gothic New",sans-serif;font-size:14px;font-weight:700;display:grid;place-items:center;}
+  .step-label .spacer{flex:1;}
+  label.field{display:block;margin-bottom:15px;}
+  .field-name{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--muted);
+    text-transform:uppercase;margin-bottom:6px;}
+  .field-name.pos{color:var(--pos);} .field-name.neg{color:var(--neg);} .field-name.star{color:var(--gold);}
+  input[type=text],textarea,select{width:100%;font:inherit;color:var(--ink);background:var(--surface-2);
+    border:1px solid var(--hair-strong);border-radius:10px;padding:11px 12px;}
+  input[type=text]:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent;}
+  textarea{resize:vertical;min-height:56px;}
+  .hint{font-size:11.5px;color:var(--muted);margin:6px 0 0;}
+  .row{display:flex;gap:12px;flex-wrap:wrap;}
+  .row>*{flex:1 1 140px;min-width:0;}
+  .toggle-row{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);margin-top:2px;}
+  .switch{position:relative;width:42px;height:24px;flex:none;}
+  .switch input{opacity:0;width:0;height:0;}
+  .slider{position:absolute;inset:0;background:var(--hair-strong);border-radius:999px;transition:.2s;cursor:pointer;}
+  .slider::before{content:"";position:absolute;height:18px;width:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;}
+  .switch input:checked+.slider{background:var(--matcha);}
+  .switch input:checked+.slider::before{transform:translateX(18px);}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{font:inherit;font-size:13.5px;cursor:pointer;background:var(--surface-2);
+    border:1px solid var(--hair-strong);color:var(--ink);border-radius:999px;padding:7px 13px;transition:all .12s ease;}
+  .chip:hover{border-color:var(--accent);}
+  .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .chip.tone[aria-pressed="true"]{background:var(--matcha);border-color:var(--matcha);}
+  .chip.mood[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);}
+  .chip.star[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#fff;}
+  .chip.star[aria-pressed="true"]::before{content:"⭐ ";}
+  .dish-row{border:1px solid var(--hair);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:var(--surface-2);}
+  .dish-row-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .star-btn{font:inherit;font-size:12px;padding:5px 10px;border-radius:999px;border:1px solid var(--hair-strong);background:var(--surface);color:var(--muted);cursor:pointer;flex:none;}
+  .star-btn[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#fff;}
+  .dish-nm{font-weight:700;font-size:14px;flex:1;min-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .cat-tag{font-size:10.5px;color:var(--matcha);border:1px solid var(--hair-strong);border-radius:999px;padding:2px 8px;flex:none;}
+  .tog{font:inherit;font-size:12px;color:var(--accent-ink);background:none;border:none;cursor:pointer;text-decoration:underline;flex:none;}
+  .dish-tastes{margin-top:10px;} .dish-tastes[hidden]{display:none;}
+  .dish-note{font-size:13px;margin-top:8px;}
+  .sug-list{border:1px solid var(--hair-strong);border-radius:10px;margin-top:6px;overflow:hidden;background:var(--surface);}
+  .sug-item{padding:10px 12px;cursor:pointer;border-top:1px solid var(--hair);}
+  .sug-item:first-child{border-top:none;} .sug-item:hover{background:var(--accent-soft);}
+  .sug-item b{font-weight:700;} .sug-item span{font-size:12px;color:var(--muted);margin-left:8px;}
+  .photo-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;}
+  .photo-add,.thumb{width:76px;height:76px;border-radius:12px;flex:none;overflow:hidden;position:relative;}
+  .photo-add{border:1.5px dashed var(--hair-strong);background:var(--surface-2);color:var(--muted);
+    display:grid;place-items:center;cursor:pointer;font-size:26px;line-height:1;}
+  .photo-add:hover{border-color:var(--accent);color:var(--accent);}
+  .photo-add input{display:none;}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .thumb .rm{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;border:none;
+    background:rgba(0,0,0,.6);color:#fff;font-size:13px;cursor:pointer;display:grid;place-items:center;line-height:1;}
+  .score-wrap{display:flex;align-items:center;gap:14px;}
+  .score-val{font-family:"Shippori Mincho B1",serif;font-size:30px;font-weight:700;color:var(--gold);
+    font-variant-numeric:tabular-nums;min-width:56px;}
+  input[type=range]{width:100%;accent-color:var(--gold);}
+  .stars{letter-spacing:2px;font-size:17px;color:var(--gold);}
+  .btn{font:inherit;font-weight:700;cursor:pointer;border-radius:12px;padding:14px 18px;border:1px solid transparent;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .08s ease, background .12s ease;}
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--accent);color:#fff;width:100%;font-size:16px;}
+  .btn-primary:hover{background:var(--accent-ink);}
+  .btn-ghost{background:transparent;border-color:var(--hair-strong);color:var(--ink);}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+  .out-card{border-color:var(--hair-strong);}
+  .out-title{font-family:"Shippori Mincho B1",serif;font-size:19px;font-weight:700;margin:0 0 10px;line-height:1.5;text-wrap:balance;}
+  .out-body{white-space:pre-wrap;font-size:15px;}
+  .out-meta{display:flex;flex-wrap:wrap;gap:6px 14px;margin:14px 0 0;padding-top:14px;
+    border-top:1px solid var(--hair);font-size:12.5px;color:var(--muted);}
+  .out-meta b{color:var(--ink);font-weight:700;}
+  .reroll-label{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin:16px 0 8px;}
+  .rerolls{display:flex;flex-wrap:wrap;gap:8px;}
+  .rr{font:inherit;font-size:12.5px;padding:7px 12px;border-radius:999px;border:1px solid var(--hair-strong);
+    background:transparent;color:var(--ink);cursor:pointer;transition:all .12s ease;}
+  .rr:hover{border-color:var(--accent);color:var(--accent);}
+  .out-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+  .out-actions>*{flex:1 1 120px;}
+  .empty{text-align:center;color:var(--muted);font-size:14px;padding:26px 10px;}
+  .empty .big{font-size:30px;display:block;margin-bottom:8px;opacity:.7;}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:var(--paper);padding:11px 20px;border-radius:999px;font-size:14px;font-weight:700;
+    opacity:0;pointer-events:none;transition:all .25s ease;z-index:50;box-shadow:0 6px 20px var(--shadow);max-width:90%;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .saved-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--hair);}
+  .saved-item:first-of-type{border-top:none;}
+  .saved-thumb{width:44px;height:44px;border-radius:9px;flex:none;background:var(--accent-soft);color:var(--accent);
+    display:grid;place-items:center;font-size:20px;overflow:hidden;}
+  .saved-main{flex:1;min-width:0;cursor:pointer;}
+  .saved-name{font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .saved-sub{font-size:12px;color:var(--muted);}
+  .saved-when{font-size:11px;color:var(--muted);margin-top:1px;}
+  .saved-btns{display:flex;gap:2px;align-items:center;flex:none;}
+  .saved-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px 5px;border-radius:8px;}
+  .saved-btn:hover{color:var(--accent);}
+  .saved-btn.yes{color:var(--neg);font-size:13px;font-weight:700;}
+  .saved-btn.no{font-size:13px;}
+  .confirm-q{font-size:12px;color:var(--neg);margin-right:2px;}
+  .note{font-size:12px;color:var(--muted);line-height:1.6;background:var(--surface-2);border-radius:10px;padding:12px 14px;margin-top:10px;}
+  .toolbar{display:flex;justify-content:flex-end;margin-bottom:6px;}
+  .theme-btn{background:none;border:1px solid var(--hair-strong);color:var(--muted);
+    border-radius:999px;padding:5px 12px;font:inherit;font-size:12px;cursor:pointer;}
+  .theme-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .persona-head{cursor:pointer;user-select:none;}
+  .persona-badge{font-size:12px;font-weight:500;color:var(--muted);background:var(--surface-2);
+    border:1px solid var(--hair);border-radius:999px;padding:4px 11px;white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis;}
+  .caret{color:var(--muted);font-size:13px;}
+  .persona-body{margin-top:16px;} .persona-body[hidden]{display:none;}
+  .mini{font-size:11.5px;color:var(--muted);margin:-8px 0 12px;}
+  .dict-sec{border-top:1px solid var(--hair);padding-top:16px;margin-top:16px;}
+  .dict-sec:first-of-type{border-top:none;padding-top:0;margin-top:0;}
+  .dict-sec-t{font-family:"Shippori Mincho B1",serif;font-weight:700;font-size:14px;margin-bottom:10px;}
+  .dict-sec input[type=text],.dict-sec textarea,.dict-sec select{margin-bottom:8px;}
+  .dict-add{width:auto;padding:9px 15px;font-size:13px;}
+  .dict-list{margin-top:6px;}
+  .dict-row{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:7px 0;border-top:1px solid var(--hair);}
+  .dict-row:first-child{border-top:none;}
+  .dict-row .g{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .dict-row .sub{color:var(--muted);font-size:11px;}
+  .dict-row .x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;flex:none;}
+  .dict-row .x:hover{color:var(--accent);}
+  .preset-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--hair);}
+  .preset-row:first-child{border-top:none;}
+  .preset-row .p-main{flex:1;min-width:0;}
+  .preset-row .p-name{font-weight:700;font-size:13.5px;}
+  .preset-row .p-desc{font-size:11.5px;color:var(--muted);}
+  .p-btn{font:inherit;font-size:12px;font-weight:700;padding:6px 13px;border-radius:999px;cursor:pointer;flex:none;
+    border:1px solid var(--hair-strong);background:transparent;color:var(--ink);}
+  .p-btn.on{background:var(--matcha);border-color:var(--matcha);color:#fff;}
+  .empty-sm{font-size:12px;color:var(--muted);padding:8px 0;}
+  details.dict-sec summary{cursor:pointer;font-family:"Shippori Mincho B1",serif;font-weight:700;font-size:14px;list-style:revert;}
+  .stat-grid{display:flex;flex-wrap:wrap;gap:8px;}
+  .stat{flex:1 1 90px;background:var(--surface-2);border:1px solid var(--hair);border-radius:10px;padding:10px 12px;}
+  .stat .n{font-family:"Shippori Mincho B1",serif;font-weight:700;font-size:22px;color:var(--accent);font-variant-numeric:tabular-nums;}
+  .stat .l{font-size:11px;color:var(--muted);margin-top:2px;}
+  .cov-row{display:flex;align-items:center;gap:10px;padding:5px 0;}
+  .cov-row .cg{flex:none;width:64px;font-size:12px;}
+  .cov-row .cbar{flex:1;height:9px;border-radius:999px;background:var(--surface-2);overflow:hidden;}
+  .cov-row .cfill{height:100%;background:var(--matcha);border-radius:999px;}
+  .cov-row .cp{flex:none;width:40px;text-align:right;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;}
+  .val-err{color:var(--neg);} .val-warn{color:var(--warn);} .val-ok{color:var(--pos);}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+
+<div class="wrap">
+  <div class="toolbar"><button class="theme-btn" id="themeBtn" type="button">◐ 表示切替</button></div>
+  <header class="app">
+    <h1 class="brand">サッと食レポ<span class="dot">.</span></h1>
+    <p class="tagline">その場で30秒メモ → 食べログ用の文章に。<br>文をつなげて、なめらかで自然な口コミに。</p>
+    <span class="ver" id="verBadge">v3.9 ・ 辞書 2026.11</span>
+  </header>
+
+  <!-- PERSONA -->
+  <section class="card">
+    <div class="step-label persona-head" id="personaHead">
+      <span class="step-num">👤</span>あなたの人物設定
+      <span class="spacer"></span>
+      <span class="persona-badge" id="personaBadge">標準</span>
+      <span class="caret" id="personaCaret">▽</span>
+    </div>
+    <div class="persona-body" id="personaBody" hidden>
+      <p class="mini">設定は自動で端末に保存され、いつでも変更できます。文章の語尾・語彙・テンションに反映されます。</p>
+      <div class="row">
+        <label class="field"><span class="field-name">性別</span>
+          <select id="pGender"><option value="">指定なし</option><option>男性</option><option>女性</option></select></label>
+        <label class="field"><span class="field-name">年齢層</span>
+          <select id="pAge"><option value="">指定なし</option><option>10代</option><option>20代</option><option>30代</option><option>40代</option><option>50代</option><option>60代以上</option></select></label>
+      </div>
+      <label class="field"><span class="field-name">職業（着眼点に反映）</span>
+        <input type="text" id="pJob" placeholder="例）会社員／学生／グルメライター／料理人"></label>
+      <div class="row">
+        <label class="field"><span class="field-name">出身・方言</span>
+          <select id="pDialect">
+            <option>標準語</option><option>関西弁</option><option>博多弁</option><option>京ことば</option>
+            <option>名古屋弁</option><option>広島弁</option><option>東北弁</option><option>沖縄</option>
+          </select></label>
+        <label class="field"><span class="field-name">キャラクター（文体）</span>
+          <select id="pChar">
+            <option>丁寧・上品</option><option>フレンドリー</option><option>グルメ通</option>
+            <option>テンション高め</option><option>クール辛口</option><option>エモい・情緒派</option>
+          </select></label>
+      </div>
+      <div class="row">
+        <label class="field"><span class="field-name">方言の強さ</span>
+          <div class="score-wrap">
+            <span class="score-val" id="pStrVal" style="font-size:16px;min-width:40px;color:var(--matcha)">中</span>
+            <input type="range" id="pStrength" min="0" max="2" step="1" value="1" style="accent-color:var(--matcha)">
+          </div></label>
+        <label class="field"><span class="field-name">文章の長さ</span>
+          <div class="score-wrap">
+            <span class="score-val" id="pLenVal" style="font-size:16px;min-width:40px;color:var(--accent)">標準</span>
+            <input type="range" id="pLength" min="0" max="2" step="1" value="1" style="accent-color:var(--accent)">
+          </div></label>
+      </div>
+      <div class="toggle-row">
+        <label class="switch"><input type="checkbox" id="pScenery" checked><span class="slider"></span></label>
+        季節・時間帯の情景描写を入れる（控えめ）
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="card">
+    <h2 class="step-label"><span class="step-num">1</span>その場でサッと記録</h2>
+    <label class="field"><span class="field-name">🔎 店名で検索（デモ）</span>
+      <input type="text" id="storeSearch" placeholder="例）とり松／ゆらぎ／新橋" autocomplete="off">
+      <div id="storeSug"></div>
+      <p class="hint">候補を選ぶと店名・エリア・ジャンルが自動入力。実運用ではGoogle Placesで全国を検索します。</p></label>
+    <label class="field"><span class="field-name">📷 写真（撮影日から訪問時期を自動取得）</span>
+      <div class="photo-grid" id="photoGrid">
+        <label class="photo-add">＋<input type="file" id="photoInput" accept="image/*" multiple></label>
+      </div></label>
+    <div class="row">
+      <label class="field"><span class="field-name">店名</span><input type="text" id="shop" placeholder="例）大衆酒場 とり松"></label>
+      <label class="field"><span class="field-name">エリア・場所</span><input type="text" id="area" placeholder="例）新橋"></label>
+    </div>
+    <div class="row">
+      <label class="field"><span class="field-name">ジャンル</span>
+        <select id="genre">
+          <option>居酒屋</option><option>カフェ</option><option>バル・ワイン</option><option>焼き鳥</option>
+          <option>焼肉</option><option>寿司</option><option>ラーメン</option><option>そば・うどん</option>
+          <option>イタリアン</option><option>フレンチ</option><option>中華</option><option>定食・食堂</option>
+          <option>スイーツ</option><option>その他</option>
+        </select></label>
+      <label class="field"><span class="field-name">時間帯</span>
+        <select id="time"><option>夜</option><option>昼</option></select></label>
+    </div>
+    <div class="row">
+      <label class="field"><span class="field-name">予算（ひとり）</span>
+        <select id="budget">
+          <option value="">選択なし</option><option>〜1,000円</option><option>1,000〜2,000円</option>
+          <option>2,000〜3,000円</option><option>3,000〜4,000円</option><option>4,000〜6,000円</option>
+          <option>6,000〜8,000円</option><option>8,000〜10,000円</option><option>10,000円〜</option>
+        </select></label>
+      <label class="field"><span class="field-name">訪問時期（自動入力・手動修正OK）</span>
+        <input type="text" id="visit" placeholder="例）2026年8月">
+        <p class="hint">写真から自動入力されますが、いつでも自由に書き換えられます。</p></label>
+    </div>
+    <label class="field" style="margin-bottom:6px"><span class="field-name">食べたもの・頼んだもの（読点で区切る）</span>
+      <input type="text" id="dishes" placeholder="例）ハイボール、名物つくね、だし巻き玉子、〆のお茶漬け"></label>
+    <div class="field" id="dishPickWrap" style="display:none">
+      <span class="field-name star">⭐ 品名ごとの指定（任意）</span>
+      <div id="dishPick"></div>
+      <p class="hint">「推し」を選ぶとその一品を主役に。「味を指定」で料理ごとに味やひとことを紐づけられます（未指定なら全体の味タグとおまかせで組み立て）。</p>
+    </div>
+    <div class="field"><span class="field-name">同行者・シーン</span><div class="chips" id="scene"></div></div>
+    <div class="field"><span class="field-name">味・料理の印象</span><div class="chips" id="tone"></div>
+      <p class="hint">選んだタグはそのまま並べず、ジャンルに合った言い回しにして文章へつなげます。</p></div>
+    <div class="field"><span class="field-name">お店の雰囲気</span><div class="chips" id="mood"></div></div>
+    <label class="field"><span class="field-name">総合点</span>
+      <div class="score-wrap"><span class="score-val" id="scoreVal">3.5</span>
+        <div style="flex:1"><input type="range" id="score" min="2.5" max="5" step="0.5" value="3.5"><div class="stars" id="stars"></div></div>
+      </div></label>
+    <label class="field"><span class="field-name pos">👍 良かった点・キーワード（読点区切り・任意）</span>
+      <textarea id="posMemo" placeholder="例）大将が気さく、つくねの黄身がとろとろ、〆のお茶漬けが絶品"></textarea>
+      <p class="hint">あなたの言葉を、引用符で貼らずに文章へ自然に織り込みます。</p></label>
+    <label class="field" style="margin-bottom:0"><span class="field-name neg">👎 気になった点（読点区切り・任意）</span>
+      <textarea id="negMemo" placeholder="例）店内が少し狭い、提供が遅め"></textarea>
+      <p class="hint">入力したときだけ、やわらかい言い回しで添えます。</p></label>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="card">
+    <h2 class="step-label"><span class="step-num">2</span>文章を生成</h2>
+    <button class="btn btn-primary" id="genBtn" type="button">✍️ 食べログ用の文章をつくる</button>
+    <div id="output"></div>
+  </section>
+
+  <!-- DICTIONARY -->
+  <section class="card">
+    <div class="step-label persona-head" id="dictHead">
+      <span class="step-num">🗂</span>辞書の管理
+      <span class="spacer"></span>
+      <span class="persona-badge" id="dictVer">2026.09</span>
+      <span class="caret" id="dictCaret">▽</span>
+    </div>
+    <div id="dictBody" hidden>
+      <p class="mini">JSONを書かずに辞書を編集できます。追加はすぐ反映され、端末に保存されます（アプリ本体の更新は不要）。</p>
+
+      <div class="dict-sec">
+        <div class="dict-sec-t">🔎 プレビュー（変更が即反映）</div>
+        <div class="row">
+          <select id="pvGenre" style="flex:1 1 120px"></select>
+          <input type="text" id="pvDishes" placeholder="料理（読点区切り）" style="flex:2 1 180px" value="サバの味噌煮、ハイボール">
+        </div>
+        <div id="pvOut" class="note" style="white-space:pre-wrap;margin-top:4px"></div>
+      </div>
+
+      <div class="dict-sec">
+        <div class="dict-sec-t">🔗 重複の統合ルール</div>
+        <div class="toggle-row"><label class="switch"><input type="checkbox" id="mergeOverride"><span class="slider"></span></label>
+          同じ食材が複数パックで重複したら上位で上書き（OFF＝両方の表現を統合）</div>
+        <div id="dupReport" class="empty-sm" style="margin-top:8px"></div>
+      </div>
+
+      <div class="dict-sec">
+        <div class="dict-sec-t">🍽 食材の言い回しを追加</div>
+        <input type="text" id="igPat" placeholder="食材名（例：ふぐ｜河豚　※ ｜ で別名も）">
+        <textarea id="igExp" placeholder="表現を1行に1つ（例：淡白で旨みの詰まったふぐ）" style="min-height:64px"></textarea>
+        <button class="btn btn-ghost dict-add" id="igAdd" type="button">＋ 追加</button>
+        <div id="igWarn" class="empty-sm" style="color:var(--neg)"></div>
+        <div id="igList" class="dict-list"></div>
+      </div>
+
+      <div class="dict-sec">
+        <div class="dict-sec-t">🧩 料理カテゴリーを追加</div>
+        <input type="text" id="catId" placeholder="ID（英数字・例：hotpot）">
+        <input type="text" id="catLabel" placeholder="表示名（例：鍋）">
+        <input type="text" id="catPat" placeholder="判定キーワード（例：鍋｜しゃぶしゃぶ｜すき焼き）">
+        <textarea id="catDescIn" placeholder="このカテゴリーの表現を1行に1つ（例：体の芯から温まる鍋）" style="min-height:60px"></textarea>
+        <button class="btn btn-ghost dict-add" id="catAdd" type="button">＋ 追加</button>
+        <div id="catList" class="dict-list"></div>
+      </div>
+
+      <div class="dict-sec">
+        <div class="dict-sec-t">📤 自作パックを書き出す</div>
+        <input type="text" id="expName" placeholder="パック名（例：わたしの寿司パック）">
+        <button class="btn btn-ghost dict-add" id="expBtn" type="button">書き出す</button>
+        <textarea id="expOut" readonly placeholder="ここに共有用JSONが出ます" style="min-height:90px;font-family:ui-monospace,monospace;font-size:12px;margin-top:8px"></textarea>
+        <button class="btn btn-ghost dict-add" id="expCopy" type="button">📋 コピー</button>
+        <p class="hint">このJSONを相手に渡し、⚙のJSON取り込みに貼り付ければ同じ辞書が使えます。</p>
+      </div>
+
+      <div class="dict-sec">
+        <div class="dict-sec-t">🏷 ジャンルの一言を追加</div>
+        <select id="gxGenre"></select>
+        <input type="text" id="gxPhrase" placeholder="お店全体の所感（例：常連に愛される名物の数々）">
+        <button class="btn btn-ghost dict-add" id="gxAdd" type="button">＋ 追加</button>
+        <div id="gxList" class="dict-list"></div>
+      </div>
+
+      <div class="dict-sec">
+        <div class="dict-sec-t">📦 プリセットパック</div>
+        <div id="presetList" class="dict-list"></div>
+      </div>
+
+      <div class="dict-sec">
+        <div class="dict-sec-t">📚 マイパック・ライブラリ</div>
+        <p class="hint" style="margin-top:0;margin-bottom:8px">上で追加した内容を名前をつけて保存し、複数をON/OFF・並べ替えできます。</p>
+        <input type="text" id="savePackName" placeholder="保存するパック名（例：わたしの居酒屋パック）">
+        <button class="btn btn-ghost dict-add" id="savePackBtn" type="button">＋ 現在の追加をパックとして保存</button>
+        <div id="packList" class="dict-list"></div>
+      </div>
+
+      <div class="dict-sec">
+        <div class="dict-sec-t">🎚 味タグ × 食材カテゴリーの相性</div>
+        <select id="tcTag"></select>
+        <div id="tcCats" class="chips" style="margin-top:8px"></div>
+        <p class="hint">チェックしたカテゴリーの料理にだけ、その味タグを使います。</p>
+      </div>
+
+      <div class="dict-sec">
+        <div class="dict-sec-t">📊 統計ダッシュボード</div>
+        <div id="statTotals" class="stat-grid"></div>
+        <div style="font-size:12px;font-weight:700;color:var(--muted);margin:12px 0 6px">ジャンル別カバー率（代表料理を認識できる割合）</div>
+        <div id="statCov"></div>
+      </div>
+
+      <div class="dict-sec">
+        <div class="dict-sec-t">🩺 総合バリデーション</div>
+        <button class="btn btn-ghost dict-add" id="valBtn" type="button">検査する</button>
+        <div id="valOut" class="dict-list"></div>
+      </div>
+
+      <div class="dict-sec">
+        <div class="dict-sec-t">☁ バックアップ・端末間の引き継ぎ</div>
+        <p class="hint" style="margin-top:0;margin-bottom:8px">全設定（辞書・パック・人物設定・下書き）を1つのコードにまとめ、別の端末やブラウザに引き継げます。</p>
+        <button class="btn btn-ghost dict-add" id="bkExport" type="button">📋 引き継ぎコードを書き出してコピー</button>
+        <button class="btn btn-ghost dict-add" id="bkFileBtn" type="button" hidden>💾 ファイルに保存</button>
+        <textarea id="bkCode" placeholder="ここにコードが出ます／復元するときは相手のコードを貼り付け" style="min-height:80px;font-family:ui-monospace,monospace;font-size:11px;margin-top:8px"></textarea>
+        <div class="out-actions">
+          <button class="btn btn-primary" id="bkImport" type="button">貼り付けたコードで復元</button>
+          <label class="btn btn-ghost" style="flex:1 1 120px;cursor:pointer">📂 ファイルから復元<input type="file" id="bkFile" accept="application/json,.json,.txt" hidden></label>
+        </div>
+        <div id="bkStatus" class="empty-sm" style="margin-top:8px"></div>
+      </div>
+
+      <details class="dict-sec">
+        <summary>⚙ JSONで読み込み／初期化（上級者）</summary>
+        <div style="margin-top:10px">
+          <input type="file" id="dictFile" accept="application/json,.json">
+          <textarea id="dictText" style="min-height:100px;font-family:ui-monospace,monospace;font-size:12px;margin-top:8px" placeholder='{"ingred":[["ふぐ|河豚",["…"]]]}'></textarea>
+          <div class="out-actions">
+            <button class="btn btn-primary" id="dictApply" type="button">JSONを取り込む</button>
+            <button class="btn btn-ghost" id="dictTpl" type="button">テンプレ</button>
+            <button class="btn btn-ghost" id="dictReset" type="button">全部リセット</button>
+          </div>
+          <div id="dictStatus" class="empty-sm" style="margin-top:8px"></div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- SAVED -->
+  <section class="card">
+    <h2 class="step-label"><span class="step-num">3</span>下書き（訪問日時つき）</h2>
+    <input type="text" id="savedSearch" placeholder="🔎 店名・ジャンル・本文で検索" style="margin-bottom:12px">
+    <div id="savedList"></div>
+    <p class="note">下書きは訪問時期と保存日時つきで、この端末内に保存されます（写真は容量の都合で対象外）。文章はすべて端末内で組み立てており、生成AIは使っていません。辞書やプリセットはバージョンで管理し、更新できます。</p>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  var APP_VER="3.9", LEX_VER="2026.11", SCHEMA=3;
+  var $=function(id){return document.getElementById(id);};
+  function rand(a){return a[Math.floor(Math.random()*a.length)];}
+  function chance(p){return Math.random()<p;}
+  function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+  function joinJP(a){if(!a.length)return"";if(a.length===1)return a[0];return a.slice(0,-1).join("、")+"と"+a[a.length-1];}
+  function esc(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+  function fill(t,m){return t.replace(/\{(\w+)\}/g,function(_,k){return m[k]!=null?m[k]:"";});}
+  function splitKW(s){return s.split(/[、,\n]/).map(function(x){return x.trim().replace(/[。.、]+$/,"");}).filter(Boolean);}
+  function stripEnd(s){return s.replace(/[。.！!、]+$/,"");}
+  function z2(n){return(n<10?"0":"")+n;}
+  function pf(map,tag,used){var a=(map[tag]&&map[tag].length)?map[tag]:[tag];var p=a.filter(function(x){return !used[x];});var f=rand(p.length?p:a);used[f]=1;return f;}
+  function pt(genre,tag,used){var g=GENRE_TONE[genre];var a=(g&&g[tag]&&g[tag].length)?g[tag]:((TONEX[tag]&&TONEX[tag].length)?TONEX[tag]:[tag]);var p=a.filter(function(x){return !used[x];});var f=rand(p.length?p:a);used[f]=1;return f;}
+  /* 文末バリエーション：直前2つと同じ言い回しを避ける（v3.9で1つ→2つに拡張） */
+  function er(bank,reg,st){
+    var o=bank[reg]||[];if(!o.length)return "";
+    var c=o.filter(function(x){return x!==st.last&&x!==st.prev;});
+    if(!c.length)c=o.filter(function(x){return x!==st.last;});
+    var e=rand(c.length?c:o);st.prev=st.last;st.last=e;return e;
+  }
+
+  var root=document.documentElement;
+  $("themeBtn").addEventListener("click",function(){
+    var cur=root.getAttribute("data-theme");
+    var dark=cur?cur==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.setAttribute("data-theme",dark?"light":"dark");
+  });
+
+  /* ---------- chips ---------- */
+  var SCENE=["ひとりで","友人と","デート","家族と","会社の同僚と","接待"];
+  var TONE=["あっさり","濃いめ","出汁がきいてる","スパイシー","甘め","ジューシー","香ばしい","さっぱり","コク深い","ボリューム満点","繊細な味付け","素材が良い"];
+  var MOOD=["落ち着く","賑やか","おしゃれ","レトロ","隠れ家的","開放的","清潔感","活気がある","デート向き","ひとりでも入りやすい","店員さんが親切"];
+  function buildChips(id,arr,cls){
+    var box=$(id);
+    arr.forEach(function(t){
+      var b=document.createElement("button");
+      b.type="button";b.className="chip "+(cls||"");b.textContent=t;b.setAttribute("aria-pressed","false");
+      b.addEventListener("click",function(){b.setAttribute("aria-pressed",b.getAttribute("aria-pressed")==="true"?"false":"true");});
+      box.appendChild(b);
+    });
+  }
+  buildChips("scene",SCENE,"");buildChips("tone",TONE,"tone");buildChips("mood",MOOD,"mood");
+  function picked(id){return Array.prototype.slice.call($(id).querySelectorAll('[aria-pressed="true"]')).map(function(b){return b.textContent;});}
+
+  /* ---------- 品名ごとの指定（推し・味・ひとこと） ---------- */
+  var dishMeta={};
+  var CAT_LABEL={drink:"ドリンク",sweet:"甘味",soup_noodle:"麺・汁",simmered:"煮込み",hotpot:"鍋",raw:"生・刺身",egg:"卵",fried:"揚げ物",grilled:"焼き",salad_veg:"サラダ・野菜",rice:"ご飯・締め",bread:"パン・粉もの",food:"料理"};
+  function renderDishRows(){
+    var cur=splitKW($("dishes").value), box=$("dishPick");
+    Object.keys(dishMeta).forEach(function(k){if(cur.indexOf(k)<0)delete dishMeta[k];});
+    cur.forEach(function(d){if(!dishMeta[d])dishMeta[d]={star:false,tones:[],note:"",open:false};});
+    box.innerHTML="";
+    $("dishPickWrap").style.display=cur.length?"block":"none";
+    cur.forEach(function(d){
+      var m=dishMeta[d];
+      var row=document.createElement("div");row.className="dish-row";
+      var head=document.createElement("div");head.className="dish-row-head";
+      head.innerHTML='<button type="button" class="star-btn" aria-pressed="'+(m.star?"true":"false")+'">⭐ 推し</button>'+
+        '<span class="dish-nm">'+esc(d)+'</span>'+
+        '<span class="cat-tag">'+(CAT_LABEL[classifyDish(d)]||"料理")+'</span>'+
+        '<button type="button" class="tog">味を指定</button>';
+      var tastes=document.createElement("div");tastes.className="dish-tastes";if(!m.open)tastes.setAttribute("hidden","");
+      head.querySelector(".star-btn").addEventListener("click",function(e){m.star=!m.star;e.currentTarget.setAttribute("aria-pressed",m.star?"true":"false");});
+      head.querySelector(".tog").addEventListener("click",function(){m.open=!m.open;if(m.open)tastes.removeAttribute("hidden");else tastes.setAttribute("hidden","");});
+      var chipWrap=document.createElement("div");chipWrap.className="chips";
+      TONE.forEach(function(t){
+        var b=document.createElement("button");b.type="button";b.className="chip tone";b.textContent=t;
+        b.setAttribute("aria-pressed",m.tones.indexOf(t)>=0?"true":"false");
+        b.addEventListener("click",function(){var i=m.tones.indexOf(t);if(i>=0){m.tones.splice(i,1);b.setAttribute("aria-pressed","false");}else{m.tones.push(t);b.setAttribute("aria-pressed","true");}});
+        chipWrap.appendChild(b);
+      });
+      var note=document.createElement("input");note.type="text";note.className="dish-note";note.placeholder="この料理のひとこと（任意）";note.value=m.note||"";
+      note.addEventListener("input",function(){m.note=note.value;});
+      tastes.appendChild(chipWrap);tastes.appendChild(note);
+      row.appendChild(head);row.appendChild(tastes);box.appendChild(row);
+    });
+  }
+  $("dishes").addEventListener("input",renderDishRows);
+
+  /* ---------- 店名検索（デモ） ---------- */
+  var STORES=[
+    {name:"大衆酒場 とり松",area:"新橋",genre:"居酒屋"},{name:"立ち飲み かどや",area:"上野",genre:"居酒屋"},
+    {name:"喫茶 ゆらぎ",area:"神保町",genre:"カフェ"},{name:"COFFEE STAND 灯",area:"中目黒",genre:"カフェ"},
+    {name:"炭火焼鳥 とり源",area:"渋谷",genre:"焼き鳥"},{name:"焼肉 牛正",area:"新大久保",genre:"焼肉"},
+    {name:"鮨 いちの",area:"銀座",genre:"寿司"},{name:"麺屋 蓮",area:"高田馬場",genre:"ラーメン"},
+    {name:"Trattoria Sole",area:"代官山",genre:"イタリアン"},{name:"ワインバル ぶどうの木",area:"恵比寿",genre:"バル・ワイン"},
+    {name:"手打ちそば 石臼",area:"浅草",genre:"そば・うどん"},{name:"パティスリー みのり",area:"自由が丘",genre:"スイーツ"}
+  ];
+  function renderSug(q){
+    var box=$("storeSug");box.innerHTML="";if(!q)return;
+    var hits=STORES.filter(function(s){return (s.name+s.area+s.genre).indexOf(q)>=0;}).slice(0,6);
+    if(!hits.length)return;
+    var list=document.createElement("div");list.className="sug-list";
+    hits.forEach(function(s){
+      var it=document.createElement("div");it.className="sug-item";
+      it.innerHTML='<b>'+esc(s.name)+'</b><span>'+esc(s.area)+'・'+esc(s.genre)+'</span>';
+      it.addEventListener("click",function(){
+        $("shop").value=s.name;$("area").value=s.area;
+        var g=$("genre");for(var i=0;i<g.options.length;i++){if(g.options[i].value===s.genre)g.selectedIndex=i;}
+        $("storeSearch").value="";box.innerHTML="";toast("店舗情報を入力しました");
+      });
+      list.appendChild(it);
+    });
+    box.appendChild(list);
+  }
+  $("storeSearch").addEventListener("input",function(){renderSug($("storeSearch").value.trim());});
+
+  /* ---------- photos + EXIF ---------- */
+  var photos=[], photoDate=null;
+  function readExifDate(file,cb){
+    try{
+      var r=new FileReader();
+      r.onload=function(){
+        try{
+          var b=new Uint8Array(r.result),n=b.length,s="",CH=8192;
+          for(var i=0;i<n;i+=CH){s+=String.fromCharCode.apply(null,b.subarray(i,Math.min(i+CH,n)));}
+          var m=s.match(/(\d{4}):([01]\d):([0-3]\d) ([0-2]\d):([0-5]\d):([0-5]\d)/);
+          if(m){cb({y:+m[1],mo:+m[2],d:+m[3],h:+m[4],mi:+m[5]});return;}
+        }catch(e){}
+        cb(null);
+      };
+      r.onerror=function(){cb(null);};
+      r.readAsArrayBuffer(file.slice(0,300000));
+    }catch(e){cb(null);}
+  }
+  $("photoInput").addEventListener("change",function(e){
+    var files=Array.prototype.slice.call(e.target.files||[]);
+    files.forEach(function(f){photos.push(URL.createObjectURL(f));});
+    renderPhotos();
+    if(!photoDate&&files[0]){
+      readExifDate(files[0],function(d){
+        if(d){photoDate=d;if(!$("visit").value.trim()){$("visit").value=d.y+"年"+d.mo+"月";toast("写真から訪問時期を取得："+d.y+"年"+d.mo+"月（修正可）");}}
+      });
+    }
+    e.target.value="";
+  });
+  function renderPhotos(){
+    var grid=$("photoGrid");grid.querySelectorAll(".thumb").forEach(function(n){n.remove();});
+    var add=grid.querySelector(".photo-add");
+    photos.forEach(function(url,i){
+      var d=document.createElement("div");d.className="thumb";
+      d.innerHTML='<img src="'+url+'" alt=""><button class="rm" type="button" aria-label="削除">×</button>';
+      d.querySelector(".rm").addEventListener("click",function(){photos.splice(i,1);renderPhotos();});
+      grid.insertBefore(d,add);
+    });
+  }
+
+  /* ---------- score ---------- */
+  function stars(v){var f=Math.floor(v),h=(v-f)>=0.5,s="";for(var i=0;i<f;i++)s+="★";if(h)s+="⯨";while(s.replace("⯨","x").length<5)s+="☆";return s;}
+  $("score").addEventListener("input",function(){var v=parseFloat($("score").value);$("scoreVal").textContent=v.toFixed(1);$("stars").textContent=stars(v);});
+  $("stars").textContent=stars(3.5);
+
+  /* ---------- persona ---------- */
+  var PKEY="satto_persona_v1";
+  var pIds=["pGender","pAge","pJob","pDialect","pChar","pStrength","pLength"];
+  function loadPersona(){try{var o=JSON.parse(localStorage.getItem(PKEY)||"{}");pIds.forEach(function(id){if(o[id]!=null&&$(id))$(id).value=o[id];});if(o.pScenery!=null)$("pScenery").checked=!!o.pScenery;}catch(e){}}
+  function savePersona(){var o={};pIds.forEach(function(id){o[id]=$(id).value;});o.pScenery=$("pScenery").checked;try{localStorage.setItem(PKEY,JSON.stringify(o));}catch(e){}updateBadge();}
+  function updateBadge(){
+    var bits=[];if($("pChar").value)bits.push($("pChar").value);
+    if($("pDialect").value&&$("pDialect").value!=="標準語")bits.push($("pDialect").value);
+    if($("pAge").value)bits.push($("pAge").value);
+    $("personaBadge").textContent=bits.length?bits.join("・"):"標準";
+    $("pStrVal").textContent=["弱","中","強"][parseInt($("pStrength").value,10)]||"中";
+    $("pLenVal").textContent=["短め","標準","長め"][parseInt($("pLength").value,10)]||"標準";
+  }
+  pIds.concat(["pScenery"]).forEach(function(id){$(id).addEventListener("change",savePersona);$(id).addEventListener("input",savePersona);});
+  $("personaHead").addEventListener("click",function(){
+    var b=$("personaBody");
+    if(b.hasAttribute("hidden")){b.removeAttribute("hidden");$("personaCaret").textContent="△";}
+    else{b.setAttribute("hidden","");$("personaCaret").textContent="▽";}
+  });
+  loadPersona();updateBadge();
+
+  /* ======== LEXICON ======== */
+  var MOODX={
+    "落ち着く":["照明を落としたシックで落ち着いた空間","喧騒から切り離された静かな雰囲気","ゆったり腰を据えられる大人の佇まい","つい長居したくなる心地よい居心地","音量を抑えたBGMが心地いい静けさ","時間の流れがゆるやかになる空気","背もたれに深く沈みたくなる寛ぎ","時間を忘れて話し込める穏やかさ"],
+    "賑やか":["話し声と笑い声が心地よく響く活気","入った瞬間に伝わる熱気と賑わい","みんなでワイワイやれる盛り上がり","威勢のいい掛け声が飛び交う空気感","グラスの触れ合う音が絶えない賑わい","隣の席との距離も気にならない陽気さ","どのテーブルも笑顔で埋まる盛況ぶり"],
+    "おしゃれ":["細部まで整えられた洗練された内装","写真を撮りたくなるセンスのいい空間づくり","照明や食器にまでこだわりを感じる店構え","居るだけで気分の上がる垢抜けた雰囲気","余白の取り方が美しい洗練された設え","差し色の効いたセンスのいいインテリア","一枚の絵のように整った店内の景色"],
+    "レトロ":["昭和の面影を残す懐かしい店構え","使い込まれたカウンターの味わい","古き良き空気が漂うノスタルジックな佇まい","年季を感じる品書きまで含めた風情","壁の貼り紙まで味わいになっている店内","時代に流されない変わらぬ佇まい","どこか実家のような懐かしさのある空間"],
+    "隠れ家的":["看板も控えめな知る人ぞ知る隠れ家感","路地裏にひっそり佇む特別感","あまり教えたくないこぢんまりとした空気","一見ではたどり着けない隠れ家的な佇まい","扉を開けるまで想像できない別世界感","常連だけが知っていそうな秘密めいた雰囲気","地図を頼りにようやく辿り着く楽しさ"],
+    "開放的":["天井が高く風通しのいい開放的な空間","光が差し込む明るく開けた店内","ゆとりある席配置ののびのびした空気","厨房を見渡せる抜けのいい造り","大きな窓から街を眺められる心地よさ","圧迫感のない伸びやかな空間設計","外の空気とゆるやかにつながる開放感"],
+    "清潔感":["隅々まで手入れの行き届いた清潔感","ピカピカのカウンターとグラスの気持ちよさ","衛生面への気配りが伝わる安心感","白木が清々しい清潔な空間","水回りまで行き届いた丁寧な仕事ぶり","曇りひとつないグラスの気持ちよさ","掃除の行き届いた気持ちのいい店内"],
+    "活気がある":["厨房から威勢のいい声が飛ぶ活気","働く人の熱量が伝わってくる空気","回転もよく勢いを感じる店内","スタッフがきびきび動く活気","鍋を振る音がリズムをつくる厨房の勢い","次々と料理が出ていく小気味よさ","店全体が気持ちよく回っている手際"],
+    "デート向き":["落ち着いて話せるデート向きの席配置","ふたりでゆっくりできるムードのある空間","静かすぎず賑やかすぎない絶妙な塩梅","記念日にも良さそうな少し特別な雰囲気","向かい合って話が弾む程よい距離感","照明の落とし方がちょうどいいムード","少し背伸びしたい日にちょうどいい設え"],
+    "ひとりでも入りやすい":["ひとりでもふらっと入れるカウンター中心の造り","一人客も多く気兼ねのいらない空気感","サッと一杯にも使える気軽さ","肩肘張らないおひとりさま歓迎の雰囲気","本を開いていても浮かない居心地","隣を気にせず自分の時間を過ごせる席","短時間でも長居でも許される懐の深さ"],
+    "店員さんが親切":["気配りの行き届いた心地よい接客","おすすめを丁寧に教えてくれるあたたかい接客","程よい距離感の感じのいい対応","つい通いたくなる笑顔の接客","聞けば何でも教えてくれる頼もしさ","グラスの空きに自然と気づいてくれる目配り","忙しくても表情を崩さない誠実な対応"]
+  };
+  var TONEX={
+    "あっさり":["最後まですっと入ってくる軽やかさ","素材の味を活かしたあっさり上品な味わい","脂に頼らない澄んだ後口","重さを残さない軽快な味の組み立て","食べ進めても疲れない優しい塩梅","すっと体になじむ穏やかな味わい"],
+    "濃いめ":["酒もご飯も進む濃いめの味付け","食べ応えを底上げするしっかりした味","後を引く濃厚な旨み","輪郭のはっきりした力強い味付け","一口目からガツンとくる密度","記憶に残るくらい味の濃い一皿"],
+    "出汁がきいてる":["じんわり広がる出汁の旨み","ふわっと立つだしの香り","料理全体を支える丁寧な出汁","素材の陰でしっかり働く出汁の仕事","飲み干したくなる出汁の奥行き","舌に長く残る上品な出汁の余韻"],
+    "スパイシー":["鼻に抜けるスパイスの香り","後からじんわり効く心地よい辛さ","幾層にも重なる複雑なスパイス使い","汗をかきながらも箸が止まらない刺激","香りと辛さのバランスが絶妙なスパイス感","冷めても香りが立ち続けるスパイスの力"],
+    "甘め":["全体をまとめるやさしい甘み","角のない好かれやすい甘さ","ほんのり甘めの味付け","後味にふわりと残る上品な甘み","甘辛の塩梅がちょうどいい仕立て","疲れた体に沁みるやさしい甘さ"],
+    "ジューシー":["噛んだ瞬間にあふれる旨み","みずみずしさを閉じ込めた食感","口の中で広がるじゅわっとした旨み","箸を入れた途端にあふれ出す肉汁","水分を逃さない絶妙な火入れ","噛むたびに旨みが戻ってくる瑞々しさ"],
+    "香ばしい":["食欲をそそる香ばしい香り","こんがり焼き上げた香ばしさ","香りだけで食が進む香ばしさ","席に着く前から漂ってくる香ばしさ","焦がし加減が絶妙な香りの立ち方","香ばしさがそのまま旨みに変わる焼き上がり"],
+    "さっぱり":["すっきりした後口の軽やかさ","柑橘の酸味が効いたさっぱりした味","重くならずさらりと楽しめる後味","箸休めにもなる爽やかな酸味","脂を洗い流してくれる切れのよさ","暑い日にこそ嬉しい涼やかな味"],
+    "コク深い":["余韻まで続く深いコク","じっくり火を入れたような奥行き","満足感の大きい重層的な旨み","時間をかけた仕事がにじむコク","一口ごとに底が見えない深み","濃いのに重くならない上質なコク"],
+    "ボリューム満点":["見た目から圧倒されるたっぷりの盛り","食べても減らないうれしいボリューム","満腹になれる気前のいい量","取り分けても余るほどの大盛り","腹八分では終わらせてくれない量感","値段を疑うほどの盛りのよさ"],
+    "繊細な味付け":["引き算の効いた繊細な味付け","素材ごとに火入れを変えた細やかな仕事","余計を削いだ上品な仕立て","塩ひとつまみの差を感じる精度","押しつけがましさのない静かな味","目を閉じて味わいたくなる繊細さ"],
+    "素材が良い":["鮮度が伝わる質のいい素材感","一口でわかるいい食材の使い方","産地までこだわっていそうな素材の良さ","手を加えすぎない素材への信頼","素材そのものが主役になる潔さ","いい材料を選んでいると伝わる味"]
+  };
+  var GENRE_TONE={
+    "カフェ":{"甘め":["ふんわり泡立てたクリームのやさしい甘さ","甘さ控えめで大人も満足のスイーツ","口の中でほどけるやわらかな甘み"],
+      "濃いめ":["深く焙煎したしっかりしたコク","ミルクに負けない濃厚なコーヒーの香り"],
+      "さっぱり":["後味すっきりの軽やかな一杯","浅煎りらしい澄んだ酸味"],
+      "コク深い":["余韻まで続く深い焙煎のコク","カップを置いても香りが残る深み"],"香ばしい":["ふわりと立ちのぼる珈琲の香ばしさ","焙煎の香りが店内に満ちる心地よさ"],
+      "繊細な味付け":["湯温まで計算されたような一杯の精度"],"素材が良い":["豆の個性がまっすぐ出た一杯"]},
+    "スイーツ":{"甘め":["口どけのいいクリームの上品な甘さ","甘さのバランスが絶妙な味","素材の甘みを活かしたやさしい味"],
+      "さっぱり":["フルーツの酸味が効いた軽い後口"],"素材が良い":["旬のフルーツの瑞々しさ","素材の香りがまっすぐ立つ仕立て"],
+      "繊細な味付け":["層ごとに役割のある緻密な組み立て"],"コク深い":["カカオやバターの香る濃厚な余韻"]},
+    "焼肉":{"ジューシー":["噛むほどにあふれる肉汁のうまさ","脂の甘みがじゅわっと広がる旨み"],
+      "香ばしい":["炭火で香ばしく焼き上げた香り","こんがり焼き目の香ばしさ"],
+      "濃いめ":["ご飯が進むしっかりめのタレ"],"素材が良い":["赤身のうまさが際立つ上質な肉","サシの入り方から違いのわかる肉質"],
+      "あっさり":["脂が軽くいくらでも入る焼き上がり"],"ボリューム満点":["頼むほどに卓が埋まる盛りのよさ"]},
+    "焼き鳥":{"香ばしい":["炭の香りをまとった香ばしい焼き上がり","備長炭で一気に焼き上げた香り"],"ジューシー":["噛むと肉汁があふれるふっくらした焼き加減"],
+      "素材が良い":["新鮮さが伝わる質のいい鶏","銘柄鶏らしい旨みの濃さ"],"繊細な味付け":["塩の振り方ひとつに神経の通った仕事"],"濃いめ":["何本でもいけるコクのあるタレ"]},
+    "寿司":{"さっぱり":["ネタの旨みを引き立てるさっぱりしたシャリ"],"素材が良い":["鮮度が光るネタのよさ","仕入れの確かさが伝わるネタ"],
+      "繊細な味付け":["繊細な仕事が光る一貫","包丁の入れ方まで計算された一貫"],"あっさり":["するりと収まる上品な握り"],"コク深い":["熟成の効いた奥行きのあるネタ"]},
+    "ラーメン":{"濃いめ":["最後まで飲みたくなる濃厚なスープ","丼の底まで力のあるスープ"],"あっさり":["澄んだ出汁のあっさりしたスープ"],
+      "コク深い":["じっくり炊いた奥行きのあるスープ"],"香ばしい":["香ばしい焦がしネギの香り","香味油の立ちのぼる香ばしさ"],
+      "ボリューム満点":["麺量も具も遠慮のない一杯"],"出汁がきいてる":["動物系と魚介の重なる厚い出汁"]},
+    "バル・ワイン":{"さっぱり":["ワインに合う爽やかな酸のある一皿"],"濃いめ":["赤ワインに寄り添う濃厚な味わい"],
+      "素材が良い":["素材を活かしたシンプルな仕立て"],"香ばしい":["オーブンから出たての香ばしい一皿"],"繊細な味付け":["塩とオイルだけで決める潔い味"]},
+    "そば・うどん":{"あっさり":["喉ごしのいい澄んだつゆ"],"素材が良い":["香り立つ挽きたての蕎麦","小麦の甘みを感じる打ち立ての麺"],
+      "さっぱり":["さらりと手繰れる軽やかな一杯"],"出汁がきいてる":["鰹の香りが立つ丁寧なつゆ"],"繊細な味付け":["つゆと麺の釣り合いが見事な一杯"]},
+    "イタリアン":{"濃いめ":["チーズの旨みが濃厚な一皿"],"素材が良い":["素材の良さが活きたシンプルな味"],
+      "あっさり":["オリーブオイルが香る軽やかな仕立て"],"香ばしい":["直火で焼き上げた香ばしい一皿"],"コク深い":["煮詰めたソースの厚みのある旨み"]},
+    "フレンチ":{"繊細な味付け":["計算され尽くした緻密な一皿","火入れの精度がそのまま味になる仕立て"],"コク深い":["時間をかけたソースの奥行き"],
+      "素材が良い":["素材の持ち味を立てる丁寧な下処理"],"あっさり":["軽やかに仕上げた現代的な一皿"]},
+    "中華":{"香ばしい":["強火で仕上げた香ばしい鍋の香り","鍋肌の香りをまとった一皿"],"濃いめ":["ご飯が進む力強い味付け"],
+      "さっぱり":["油の切れのいい軽やかな後口"],"スパイシー":["花椒の痺れが心地よい辛さ"],"ボリューム満点":["取り分けても余る大皿の迫力"]},
+    "居酒屋":{"出汁がきいてる":["酒の邪魔をしない丁寧な出汁使い"],"濃いめ":["杯が進むしっかりした味つけ"],
+      "さっぱり":["箸休めにちょうどいい爽やかな一品"],"素材が良い":["その日の仕入れで決める一品"],"ボリューム満点":["値段の割に気前のいい盛り"]},
+    "定食・食堂":{"出汁がきいてる":["味噌汁まで手を抜かない出汁"],"ボリューム満点":["ご飯のおかわりが前提の盛り"],
+      "あっさり":["毎日でも食べられる優しい味"],"甘め":["どこか懐かしい甘辛の味つけ"],"素材が良い":["飾らないが素材はしっかりした一皿"]}
+  };
+  var GENREX={
+    "居酒屋":["キンと冷えた一杯目のうまさ","肴が進む酒のラインナップ","〆まで気の抜けない構成","黒板に並ぶ日替わりの楽しさ","一品ごとの値段のつけ方の良心的さ","通しで頼んでも飽きない品書きの幅","常連の注文を横目に真似したくなる楽しさ"],
+    "カフェ":["丁寧に淹れられた一杯の香り","ゆっくり流れる午後のような時間","居心地のいい落ち着いた席","豆の説明まで添えてくれる丁寧さ","甘いものと一杯の組み立ての妙","何をするでもなく過ごせるありがたさ"],
+    "バル・ワイン":["料理に寄り添うワインの品揃え","気軽に頼めるグラスの充実","つまみとの相性を考えた一皿","一杯目から相談に乗ってくれる心強さ","少量ずつ何皿も楽しめる構成","立ち寄りにも長居にも応えてくれる懐"],
+    "焼き鳥":["炭の香りをまとった一本一本の火入れ","部位ごとの個性を楽しめる串の構成","塩とタレの使い分けの妙","目の前で串が返される時間そのものの楽しさ","おまかせで頼む楽しさのある構成","一本ずつ出てくるリズムの心地よさ"],
+    "焼肉":["脂の甘みが際立つ上質な肉","炭火で香ばしく焼き上がる瞬間","部位のバリエーションの豊かさ","一枚ごとに焼き方を教えてくれる丁寧さ","タレと塩の使い分けまで考えられた構成","〆まで気を抜かない品揃え"],
+    "寿司":["ネタの鮮度が光る仕事","口の中でほどけるシャリの塩梅","握りのリズムと丁寧さ","季節ごとに変わる仕入れの確かさ","目の前で仕事を見られる贅沢","一貫ごとに温度まで整えられた握り"],
+    "ラーメン":["最後まで飲み干したくなるスープ","のど越しのいい麺の食感","一杯の完成度の高さ","スープと麺の合わせ方の緻密さ","卓上の薬味まで計算された一杯","行列に並ぶ理由のわかる完成度"],
+    "そば・うどん":["喉ごしのいいコシのある麺","香り立つつゆの奥行き","素材の良さが際立つ一杯","手際よく出てくる気持ちよさ","薬味ひとつまで丁寧に揃えられた一式","昼どきにさっと手繰れるありがたさ"],
+    "イタリアン":["小麦の香るパスタの茹で加減","素材を活かしたシンプルな一皿","カジュアルに楽しめる構成","前菜からドルチェまでの流れの良さ","気取らないのに手の込んだ仕立て","ワインと合わせて完成する組み立て"],
+    "フレンチ":["丁寧に組み立てられた一皿の完成度","ソースの奥行きと火入れの妙","特別感のあるコースの流れ","皿が運ばれるたびに上がる期待","素材の選び方から伝わる仕事の質","記念日にふさわしい一連の時間"],
+    "中華":["強い火力で仕上げた香ばしい一皿","油の切れのいい軽やかさ","定番から本格まで揃う幅","大皿を囲んで取り分ける楽しさ","町中華の気軽さと本格の味の両立","何を頼んでも外さない安定感"],
+    "定食・食堂":["家庭的でほっとする味わい","バランスのいい献立の安心感","気取らない普段使いの良さ","ご飯と味噌汁のちょうどよさ","値段を見て二度うれしくなる良心的さ","毎日通っても飽きない献立の幅"],
+    "スイーツ":["口どけのいいクリームの軽さ","甘さのバランスが取れた仕上がり","見た目も楽しい盛り付け","ショーケースを眺める時間の幸福感","季節ごとに変わる品揃えの楽しさ","手土産にも選びたくなる完成度"],
+    "その他":["料理に向き合う姿勢の伝わる一皿","肩肘張らずに楽しめる構成","また別の品も試したくなる品書き"]
+  };
+  /* 料理名 → カテゴリー分類（先頭一致優先） */
+  var CAT_ORDER=[
+    ["sweet",/ケーキ|パフェ|アイス|プリン|タルト|パンケーキ|クレープ|ムース|チョコ|マカロン|ゼリー|あんみつ|ぜんざい|スイーツ|ドーナツ|フレンチトースト|ソフトクリーム|大福|団子|わらび|ブリュレ/],
+    ["rice",/お茶漬け|茶漬け|雑炊|おにぎり|丼|チャーハン|炒飯|リゾット|パエリア|ピラフ|カレーライス|ライス|ご飯|ごはん|白米|寿司飯|おじや/],
+    ["soup_noodle",/ラーメン|つけ麺|そば|蕎麦|うどん|パスタ|スパゲ|スープ|味噌汁|吸い物|ポタージュ|ちゃんぽん|フォー|にゅうめん|素麺|そうめん|担々/],
+    ["hotpot",/鍋|しゃぶしゃぶ|すき焼き|水炊き|ちゃんこ|湯豆腐|ほうとう|石狩|寄せ鍋|もつ鍋|チゲ|火鍋/],
+    ["simmered",/煮込み|角煮|味噌煮|肉じゃが|シチュー|カレー|おでん|煮付け|煮物|ポトフ|蒸し|せいろ|筑前煮|甘露煮|ラタトゥイユ|煮びたし/],
+    ["raw",/刺身|お造り|寿司|鮨|カルパッチョ|ユッケ|たたき|なめろう|生ハム|マグロ|サーモン|ネタ|握り|カルパ|セビーチェ|タルタル|ルイベ/],
+    ["egg",/玉子|卵|オムレツ|だし巻|茶碗蒸し|温泉卵|目玉|オムライス|スクランブル/],
+    ["fried",/揚げ|天ぷら|天麩羅|唐揚げ|から揚げ|フライ|カツ|コロッケ|フリット|春巻き|素揚げ|竜田|メンチ|かき揚げ/],
+    ["bread",/パン|トースト|サンド|バゲット|クロワッサン|ベーグル|ピザ|ピッツァ|お好み焼き|たこ焼き|焼きそば|焼そば|もんじゃ|ガレット|ワッフル|ブリオッシュ|フォカッチャ/],
+    ["grilled",/焼き|焼|炭火|串|ステーキ|焼肉|グリル|ロースト|蒲焼|照り焼き|つくね|ハンバーグ|ソーセージ|塩焼|タン|ハラミ|カルビ|ホルモン|網焼|鉄板|炙り|グラタン|アヒージョ/],
+    ["salad_veg",/サラダ|野菜|マリネ|お浸し|おひたし|漬物|浅漬け|冷奴|ピクルス|ナムル|キムチ|ぬか漬け|南蛮漬け/],
+    ["drink",/ビール|ハイボール|サワー|ワイン|日本酒|冷酒|熱燗|焼酎|ウイスキー|ウィスキー|カクテル|コーヒー|珈琲|ラテ|カフェオレ|紅茶|抹茶ラテ|ジュース|スムージー|ドリンク|一杯|レモンサワー|モヒート|梅酒|ジントニック|ワインボトル/]
+  ];
+  function classifyDish(name){for(var i=0;i<CAT_ORDER.length;i++){if(CAT_ORDER[i][1].test(name))return CAT_ORDER[i][0];}return "food";}
+  /* カテゴリー別の描写（その料理に合う言い回し・名詞止め）— v3.2で拡充 */
+  var CAT_DESC={
+    drink:["キンと冷えた喉ごし","すいすい進む飲みやすさ","料理を引き立てる爽やかさ","一杯目から気分の上がるうまさ","香り高い一杯","のどを鳴らしたくなる一杯","キレのある後口","じっくり味わいたい奥行き","グラスの縁まで冷えた心配り","料理と並走してくれる一杯"],
+    sweet:["口どけのいい上品な甘さ","甘さのバランスが絶妙な仕上がり","素材の風味を活かしたやさしい味","見た目も愛らしい盛り付け","ほっと和む後味","ひと口で頬がゆるむ美味しさ","重すぎない軽やかな口当たり","丁寧に作られた繊細な一皿","最後のひと口まで飽きない構成","フォークを入れる瞬間から楽しい一皿"],
+    soup_noodle:["最後まで飲み干したくなるスープ","のど越しのいい麺","出汁の旨みがじんわり広がる一杯","体に沁みわたるあたたかさ","バランスの取れた一杯","すするたびに旨みが広がる一杯","麺とスープの一体感","丼を持つ手が止まらない美味しさ","啜る音まで心地よくなる一杯","具材まで役割のある丁寧な構成"],
+    simmered:["じっくり煮込まれてほろりと崩れる身","味がしっかり染みた奥深い一皿","じんわり温まる煮込みの旨み","時間をかけた丁寧な仕事","箸で切れるほど柔らかな仕上がり","出汁を含んだ滋味深い味わい","冷めても美味しい味の含ませ方","煮汁までご飯にかけたくなる旨み","何日も仕込んだような深い味"],
+    hotpot:["卓を囲むだけで温まる一鍋","煮えるのを待つ時間まで含めてごちそう","具材の旨みが溶け合ったスープ","〆まで計算された鍋の構成","体の芯からほどけていくあたたかさ","取り分けるほどに旨みが増していく鍋"],
+    grilled:["香ばしく焼き上げた食欲をそそる一皿","炭の香りをまとった旨み","外は香ばしく中はふっくらした焼き加減","焼きたての熱々のうまさ","絶妙な火入れのジューシーさ","脂の甘みが立つ焼き上がり","こんがりした焼き目の香ばしさ","音と匂いから期待させる焼き上がり","火から下ろす頃合いの見事さ"],
+    fried:["さくっと軽い衣の食感","揚げたての香ばしさ","油っぽさのない上品な揚げ加減","中はジューシーな仕上がり","衣のサクサク感と中のふっくら感","カリッと揚がった小気味よい歯ざわり","時間が経ってもべたつかない揚げ加減","衣が薄くまとわりつく丁寧な仕事","塩だけで十分と思わせる揚げ上がり"],
+    raw:["鮮度が光るネタのよさ","口の中でとろける舌ざわり","素材そのものの澄んだ旨み","丁寧な仕事を感じる一品","ねっとりとした上質な舌ざわり","素材の甘みが引き立つ仕立て","口に運んだ瞬間に広がる旨み","包丁の入れ方まで伝わる仕事","余計な手を加えない潔い一皿"],
+    rice:["旨みを吸った締めにぴったりの一杯","ほっとする優しい味わい","米の甘みが引き立つ仕上がり","するりと入る締めの一品","粒立ちのいいご飯の美味しさ","出汁が染みたやさしい味","最後まで飽きのこない味わい","満腹でも入ってしまう締めの魔力","米そのものの良さが伝わる炊き加減"],
+    egg:["ふわふわの食感","出汁を含んだやさしい味わい","丁寧に巻かれた美しい層","とろりと半熟の絶妙な火入れ","口の中でほどけるやわらかさ","箸を入れた瞬間の揺れ方まで美しい仕上がり","卵の甘みがまっすぐ届く仕立て"],
+    salad_veg:["みずみずしい野菜の食感","素材の鮮度が伝わる一皿","さっぱりと箸休めにぴったりの一品","シャキシャキした歯ざわり","ドレッシングまで手が込んだ一皿","彩りだけで食欲が戻る盛り付け","野菜が主役として立っている一皿"],
+    bread:["しっかり焼き込まれた皮の香ばしさ","粉の香りが立つ焼き上がり","小麦の甘みが素直に伝わる一枚","焼きたてならではの熱と香り","生地そのものを味わいたくなる出来","噛むほどに甘みの出る生地"],
+    food:["丁寧に作られた一皿","素材の良さが伝わる味わい","期待を裏切らない仕上がり","ひと工夫を感じる一品","満足度の高い味わい","作り手の考えが見える一皿","何度でも頼みたくなる安定感"]
+  };
+  /* 食材レベルの描写（品名の食材から連想・優先採用）— v3.3 拡大。パターンは文字列（外部辞書で差し替え可能） */
+  var INGRED_DEF=[
+    /* 魚（赤身・青魚・白身・その他） */
+    ["まぐろ|マグロ|鮪|中トロ|大トロ|ちゅうとろ",["赤身のねっとりとした旨み","脂がとろける中トロの口どけ"]],
+    ["サーモン|サモン|鮭|シャケ",["脂がのってとろけるサーモン","鮮やかな色艶ののったサーモン"]],
+    ["さば|サバ|鯖",["脂がしっかりのった鯖","青魚らしい旨みの詰まった鯖"]],
+    ["ぶり|ブリ|鰤|はまち|ハマチ|かんぱち|カンパチ",["脂の甘みがのった身","もっちりとした食感の身"]],
+    ["あじ|アジ|鯵",["脂がのって旨みの濃いアジ","薬味の香る新鮮なアジ"]],
+    ["いわし|イワシ|鰯|さんま|サンマ|秋刀魚",["脂ののった旨みの強い青魚"]],
+    ["かつお|カツオ|鰹|藁焼き",["香ばしい藁の香りのカツオ","もっちり赤身のカツオ"]],
+    ["たい|鯛|真鯛|金目|きんめ|ひらめ|平目|白身",["上品な甘みのある白身","締まった身の澄んだ旨み"]],
+    ["のどぐろ|ノドグロ|喉黒",["脂がとろける濃厚なのどぐろ"]],
+    ["えんがわ|エンガワ",["コリコリした食感のえんがわ"]],
+    ["穴子|あなご|アナゴ",["ふっくら柔らかな穴子","ほろりとほどける穴子"]],
+    ["うなぎ|鰻|うな重|蒲焼",["香ばしくふっくら焼き上げた鰻","タレの香ばしさが食欲をそそる鰻"]],
+    ["はも|ハモ|鱧",["上品な白身の鱧","ふわりとした湯引きの食感"]],
+    ["しらす|シラス|ちりめん",["ふわっと口に広がるしらすの旨み"]],
+    ["明太子|めんたい|たらこ|タラコ",["粒の弾ける明太子","塩気と旨みが後を引く一品"]],
+    /* 貝類 */
+    ["牡蠣|カキ|かき",["海の香りがふわっと広がる牡蠣","ぷりっと大ぶりの牡蠣"]],
+    ["ホタテ|帆立|ほたて",["肉厚で甘みの強いホタテ","とろける柔らかさのホタテ"]],
+    ["あさり|アサリ|浅蜊",["旨みたっぷりのあさりの出汁"]],
+    ["しじみ|シジミ|蜆",["滋味深いしじみの出汁"]],
+    ["はまぐり|ハマグリ|蛤",["ぷりっと肉厚なはまぐり","上品な出汁のはまぐり"]],
+    ["つぶ貝|ツブ貝|さざえ|サザエ|赤貝|北寄|ホッキ|みる貝|ミル貝|とり貝",["コリコリと歯ごたえのいい貝","磯の香りが心地よい貝"]],
+    ["あわび|アワビ|鮑",["こりっとした食感の鮑","磯の香り豊かな鮑"]],
+    /* 甲殻・軟体 */
+    ["海老|エビ|えび|ぼたん|甘えび|車海老|ブラックタイガー",["ぷりぷりの食感の海老","とろりと甘い海老"]],
+    ["蟹|カニ|かに|ズワイ|タラバ|毛蟹",["みっしり詰まった蟹の身","甘みの濃い蟹"]],
+    ["いか|イカ|烏賊",["コリコリした歯ごたえのイカ","甘みのあるねっとりしたイカ"]],
+    ["たこ|タコ|蛸",["やわらかく仕上げたタコ","歯ごたえの楽しいタコ"]],
+    ["うに|ウニ|雲丹",["とろりと甘いウニ","濃厚な磯の香りのウニ"]],
+    ["いくら|イクラ|筋子",["口の中で弾けるイクラ","プチプチと弾ける贅沢な粒"]],
+    ["白子",["クリーミーで濃厚な白子","口の中でとろける白子"]],
+    /* 肉 */
+    ["牛タン|たん塩|タン塩|タン",["厚切りで食べ応えのあるタン","さくっとした歯ざわりのタン"]],
+    ["ハラミ|はらみ",["赤身の旨みが濃いハラミ","柔らかくジューシーなハラミ"]],
+    ["カルビ|かるび|三角バラ",["脂の甘みがとろけるカルビ","濃厚な旨みのカルビ"]],
+    ["サーロイン|ステーキ|和牛|赤身肉|牛肉|牛ロース",["赤身の旨みが濃い牛肉","口の中でほどける柔らかな肉質"]],
+    ["ホルモン|シマチョウ|ミノ|マルチョウ|てっちゃん",["脂の甘みと弾力のあるホルモン","噛むほどに旨みの出るホルモン"]],
+    ["レバー|レバ|きも|肝",["とろりと濃厚なレバー","臭みのない新鮮なレバー"]],
+    ["砂肝|すなぎも|ずり",["コリコリと小気味よい砂肝"]],
+    ["角煮|豚バラ|ポーク|チャーシュー|叉焼|豚肉|とんかつ|トンカツ",["脂までとろける豚肉","ほろりと崩れる柔らかな豚"]],
+    ["鴨|カモ|合鴨",["旨みの濃い鴨のロース","脂の香りが上品な鴨"]],
+    ["ラム|羊|マトン|ジンギスカン",["クセになる香りのラム","柔らかくジューシーなラム"]],
+    ["つくね|焼き鳥|やきとり|鶏|とり|チキン|唐揚げ|から揚げ|もも肉|ささみ|手羽|せせり|ぼんじり",["ジューシーな鶏の旨み","皮目の香ばしい鶏"]],
+    /* 卵・豆・チーズ */
+    ["だし巻き|玉子焼き|卵焼き|出汁巻",["出汁がじゅわっとあふれる玉子焼き","ふわとろの優しい口当たり"]],
+    ["温泉卵|半熟|卵黄|黄身|月見",["とろりと絡む濃厚な黄身"]],
+    ["豆腐|冷奴|湯豆腐|揚げ出し",["大豆の甘みが引き立つ豆腐","なめらかな口当たりの豆腐"]],
+    ["納豆",["粘りと旨みの納豆"]],
+    ["モッツァレラ|ブラータ|生モッツァ",["みずみずしく伸びるモッツァレラ","ミルキーで濃厚なチーズ"]],
+    ["ゴルゴンゾーラ|ブルーチーズ",["塩気と旨みの強いブルーチーズ","蜂蜜と好相性の濃厚なチーズ"]],
+    ["カマンベール|ブリーチーズ",["とろりと濃厚に溶けるカマンベール"]],
+    ["チーズ|ラクレット|パルミジャーノ|ゴーダ",["濃厚にとろけるチーズ","コクのあるチーズの旨み"]],
+    /* 野菜・きのこ */
+    ["トマト|フルーツトマト",["甘みと酸味のバランスがいいトマト","みずみずしく甘いトマト"]],
+    ["ナス|なす|茄子",["とろっととろける茄子","出汁を吸ったジューシーな茄子"]],
+    ["アスパラ|アスパラガス",["みずみずしく甘いアスパラ","シャキッとした歯ざわり"]],
+    ["とうもろこし|コーン|トウモロコシ",["粒の弾ける甘いとうもろこし"]],
+    ["枝豆|えだまめ",["塩気のきいたほくほくの枝豆"]],
+    ["かぼちゃ|南瓜",["ほくほくと甘いかぼちゃ"]],
+    ["きのこ|キノコ|茸|しいたけ|椎茸|舞茸|エリンギ|しめじ|松茸|なめこ",["香り豊かなきのこの旨み","肉厚で食べ応えのあるきのこ"]],
+    ["アボカド",["濃厚でクリーミーなアボカド"]],
+    ["大根|だいこん|ふろふき",["味の染みたやわらかな大根"]],
+    ["サラダ|グリーンサラダ|温野菜",["みずみずしい野菜のシャキシャキ感","彩り豊かで新鮮な野菜"]],
+    /* 米・麺・粉もの */
+    ["餃子|ぎょうざ",["肉汁あふれる餃子","パリッと焼き上がった餃子"]],
+    ["天ぷら|天麩羅|かき揚げ|天婦羅",["さくさく軽い衣の天ぷら","素材の甘みを閉じ込めた揚げ加減"]],
+    ["カレー",["スパイスの香り立つカレー","じっくり煮込んだ奥深いカレー"]],
+    ["そば|蕎麦",["香り高い蕎麦の風味","のど越しのいい細打ちの麺"]],
+    ["うどん",["もちもちとコシのあるうどん","つるりとしたのど越し"]],
+    ["パスタ|スパゲ|カルボ|ペペロン|ボロネーゼ|ナポリタン",["アルデンテに茹で上げたパスタ","ソースがよく絡む麺"]],
+    ["ピザ|ピッツァ|マルゲリータ",["薄焼きで香ばしい生地","チーズがとろける熱々の一枚"]],
+    ["焼きそば|焼そば",["ソースの香ばしい焼きそば"]],
+    ["豚骨|とんこつ",["濃厚でクリーミーな豚骨スープ"]],
+    ["味噌ラーメン|味噌だれ",["コクの深い味噌の旨み"]],
+    ["醤油ラーメン|醤油スープ|中華そば",["キレのある醤油の香り"]],
+    ["塩ラーメン|塩そば",["澄んだやさしい塩スープ"]],
+    ["家系|二郎|背脂",["背脂の効いたパンチのあるスープ"]],
+    ["チャーハン|炒飯|焼き飯",["パラッと炒め上げたチャーハン","香ばしい鍋肌の風味"]],
+    ["海鮮丼|親子丼|カツ丼|天丼|うな丼",["具材の旨みがご飯に染みた丼"]],
+    ["おにぎり|お茶漬け|茶漬け|雑炊|おじや",["ほっとする締めの一品","出汁が染みたやさしい味"]],
+    /* 甘味・ドリンク */
+    ["抹茶",["ほろ苦く香り高い抹茶","上品な抹茶の風味"]],
+    ["チョコ|ガトーショコラ|ショコラ",["濃厚なカカオの風味","ビターな大人の味わい"]],
+    ["いちご|苺|ストロベリー",["甘酸っぱいいちごの果実感","みずみずしいいちご"]],
+    ["プリン",["なめらかな口当たりのプリン","どこか懐かしいやさしい甘さ"]],
+    ["ケーキ|ショートケーキ|タルト|モンブラン",["ふんわり軽い口当たりのケーキ","素材が引き立つ上品な一皿"]],
+    ["パンケーキ|ホットケーキ|パフェ",["ふんわり幸せな口当たり","華やかで気分の上がる一皿"]],
+    ["アイス|ジェラート|ソフトクリーム",["ひんやりなめらかなアイス","濃厚なミルクのコク"]],
+    ["ティラミス",["コーヒーが香るほろ苦いティラミス"]],
+    ["コーヒー|珈琲|エスプレッソ|ラテ|カフェオレ",["深いコクと香りのコーヒー","すっきり澄んだ後味のコーヒー"]],
+    ["紅茶|ティー",["華やかに香る紅茶"]],
+    ["ビール|生ビール",["キンと冷えた喉ごしのビール","きめ細かい泡のビール"]],
+    ["ハイボール|ウイスキー|ウィスキー",["すっきり爽快なハイボール"]],
+    ["ワイン|グラスワイン",["料理に寄り添うワイン","香り豊かな一杯のワイン"]],
+    ["日本酒|地酒|冷酒|熱燗",["料理を引き立てる日本酒","米の旨みを感じる一杯"]],
+    ["レモンサワー|サワー|チューハイ",["さっぱり爽やかなサワー"]],
+    ["梅酒",["まろやかで飲みやすい梅酒"]],
+    /* ===== v3.9 拡充：部位・季節・郷土・各国料理 ===== */
+    /* 焼き鳥・鶏の部位 */
+    ["せせり|ネック",["よく動く部位ならではの弾力のあるせせり"]],
+    ["ぼんじり",["脂の旨みが凝縮したぼんじり"]],
+    ["皮|とり皮|鶏皮",["パリッと焼き上げた香ばしい皮"]],
+    ["手羽先|手羽中|手羽",["しゃぶりつきたくなる手羽先","皮目の香ばしい手羽"]],
+    ["なんこつ|軟骨|やげん",["コリコリと小気味よい軟骨"]],
+    ["ささみ|笹身",["しっとり火を入れたささみ","淡白ながら旨みのあるささみ"]],
+    ["うずら|うずらの卵",["ひと口で嬉しいうずらの卵"]],
+    ["ねぎま",["鶏と葱の甘みが重なるねぎま"]],
+    /* 季節の食材 */
+    ["筍|たけのこ|タケノコ",["えぐみのない香り高い筍","春を感じるやわらかな筍"]],
+    ["そら豆|空豆|グリンピース",["ほくほくと青い香りのそら豆"]],
+    ["新玉ねぎ|新たまねぎ",["みずみずしく甘い新玉ねぎ"]],
+    ["菜の花|ふきのとう|たらの芽|山菜",["ほろ苦さが春を告げる一品"]],
+    ["鮎|あゆ",["清流を思わせる香りの鮎","はらわたの苦みまでごちそうの鮎"]],
+    ["枝豆|だだちゃ",["塩気のきいたほくほくの枝豆"]],
+    ["冬瓜|とうがん|オクラ|みょうが|茗荷",["夏らしく涼やかな一皿"]],
+    ["栗|マロン|渋皮煮",["ほっくり甘い栗の風味"]],
+    ["銀杏|ぎんなん",["もっちり香ばしい銀杏"]],
+    ["さつまいも|サツマイモ|安納芋",["しっとり甘いさつまいも"]],
+    ["白菜|春菊|せり|水菜",["鍋に欠かせない甘みの出る野菜"]],
+    ["ぶり大根|寒ブリ",["脂ののった寒鰤の旨み"]],
+    ["桃|梨|柿|ぶどう|マスカット|シャインマスカット",["旬の果実らしい瑞々しい甘さ"]],
+    /* 郷土・名物 */
+    ["もつ鍋",["プリプリのもつと甘い野菜のもつ鍋"]],
+    ["水炊き",["鶏の旨みが溶け出した澄んだ水炊き"]],
+    ["すき焼き",["割下の甘辛さが染みたすき焼き"]],
+    ["しゃぶしゃぶ",["さっとくぐらせるだけで甘くなる肉"]],
+    ["ひつまぶし",["三通りで楽しめるひつまぶし"]],
+    ["味噌カツ|味噌おでん|どて",["甘辛い味噌だれの濃厚さ"]],
+    ["きしめん|ほうとう|ひもかわ",["つるりと幅広の麺のたのしさ"]],
+    ["ソーキ|ラフテー|海ぶどう|ゴーヤ",["南国らしい大らかな味わい"]],
+    ["芋煮|せんべい汁|きりたんぽ",["郷土の滋味が沁みる一杯"]],
+    ["ずんだ|笹かま|牛タン定食",["土地ならではの名物らしさ"]],
+    ["讃岐|稲庭|五島",["産地の名に恥じないコシと喉ごし"]],
+    ["八丁味噌|白味噌|西京",["味噌の個性が前に出た味付け"]],
+    /* 中華 */
+    ["麻婆|マーボー",["花椒の痺れが心地よい麻婆"]],
+    ["小籠包|焼売|シュウマイ|しゅうまい",["蒸したての熱々の点心","噛むと肉汁があふれる点心"]],
+    ["エビチリ|海老チリ",["甘辛いソースの絡んだ海老"]],
+    ["酢豚|黒酢",["酸味と甘みの均衡がいい仕立て"]],
+    ["青椒肉絲|回鍋肉|ホイコーロー",["ご飯が止まらない力強い炒め"]],
+    ["担々|タンタン",["胡麻の香りとコクの担々麺"]],
+    ["北京ダック",["皮の香ばしさが際立つ北京ダック"]],
+    ["油淋鶏|ユーリンチー",["甘酢だれの絡んだ香ばしい鶏"]],
+    /* 洋食・西洋 */
+    ["ローストビーフ",["しっとり火を入れたローストビーフ"]],
+    ["アヒージョ",["オイルまでパンで拭いたくなるアヒージョ"]],
+    ["生ハム|プロシュート",["塩気と熟成の香る生ハム"]],
+    ["パテ|テリーヌ|リエット",["ワインが進む濃密なパテ"]],
+    ["ブイヤベース|アクアパッツァ",["魚介の旨みが溶け合ったスープ"]],
+    ["ラザニア|グラタン|ドリア",["チーズの焦げ目まで美味しい一皿"]],
+    ["エスカルゴ|ムール貝|ムール",["ソースごと味わいたい貝の一皿"]],
+    ["ハンバーグ",["肉の粗さを残したジューシーなハンバーグ"]],
+    ["オムライス",["ふわとろの卵とソースの相性"]],
+    ["サンドイッチ|サンド|クロックムッシュ",["具だくさんで満足感のあるサンド"]],
+    ["バゲット|カンパーニュ|フォカッチャ|自家製パン",["外は香ばしく中はもっちりのパン","粉の甘みを感じる自家製の生地"]],
+    ["クロワッサン|デニッシュ",["層がほどけるバターの香るクロワッサン"]],
+    /* 韓国 */
+    ["キムチ|カクテキ",["よく漬かった旨みのあるキムチ"]],
+    ["チヂミ|ジョン",["外はカリッと香ばしいチヂミ"]],
+    ["サムギョプサル|サンチュ",["葉で巻いて食べる楽しさ"]],
+    ["ビビンバ|石焼",["おこげまで美味しい石焼の一杯"]],
+    ["参鶏湯|サムゲタン|スンドゥブ|チゲ",["体の芯から温まる一杯"]],
+    /* 和食・小鉢 */
+    ["茶碗蒸し",["出汁の効いたなめらかな茶碗蒸し"]],
+    ["湯葉|生湯葉",["大豆の甘みが際立つ湯葉"]],
+    ["筑前煮|煮しめ|がんも|里芋",["味の含ませ方が丁寧な煮物"]],
+    ["南蛮漬け|マリネ",["酸味の角が取れた食べやすい仕立て"]],
+    ["ぬか漬け|浅漬け|糠漬け",["塩梅のいい漬かり具合"]],
+    ["おでん|大根おでん",["出汁をたっぷり含んだおでん種"]],
+    ["煮卵|味玉|味付け卵",["黄身がとろりと流れる味玉"]],
+    ["メンマ|穂先メンマ",["コリッと香りのいいメンマ"]],
+    ["海苔|焼き海苔|板海苔",["磯の香り立つ海苔"]],
+    ["柚子|柚子胡椒|かぼす|すだち",["柑橘の香りがきりっと締める仕立て"]],
+    ["山葵|わさび|本わさび",["鼻に抜ける本わさびの香り"]],
+    ["出汁茶漬け|鯛茶漬け",["出汁を注いだ瞬間に香り立つ締め"]],
+    /* 粉もの・その他 */
+    ["もんじゃ",["香ばしいおこげが楽しいもんじゃ"]],
+    ["ガレット|クレープ",["そば粉の香る薄焼きの生地"]],
+    ["フライドポテト|ポテト|フリット",["外はカリッと中はほくほくのポテト"]],
+    ["ナッツ|ピスタチオ|アーモンド",["香ばしいナッツの食感"]],
+    /* 甘味の追加 */
+    ["どら焼き|みたらし|団子|大福|羊羹|最中",["素朴でほっとする和の甘味"]],
+    ["わらび餅|くずきり|あんみつ|ぜんざい",["つるりと涼やかな和菓子"]],
+    ["かき氷",["ふわふわに削られた氷の口どけ"]],
+    ["シュークリーム|エクレア",["クリームがたっぷり詰まった一つ"]],
+    ["バスクチーズケーキ|チーズケーキ|レアチーズ",["濃厚なチーズの余韻"]],
+    ["フィナンシェ|マドレーヌ|ガレット・デ・ロワ",["バターの香る焼き菓子"]],
+    ["あんこ|粒あん|こしあん",["上品な甘さの餡"]],
+    /* ドリンクの追加 */
+    ["クラフトビール|IPA|エール",["個性の立ったクラフトビール"]],
+    ["シャンパン|スパークリング|プロセッコ",["泡の細かい華やかな一杯"]],
+    ["ジン|ジントニック|カクテル",["香草の香りが心地よい一杯"]],
+    ["ほうじ茶|緑茶|煎茶|玄米茶",["香ばしく落ち着く日本茶"]],
+    ["抹茶ラテ|ソイラテ|チャイ",["やさしい口当たりの一杯"]],
+    ["レモネード|自家製シロップ|クリームソーダ",["見た目から楽しい一杯"]]
+  ];
+  var INGRED=[];
+  function compileIngred(){INGRED=INGRED_DEF.map(function(e){var re;try{re=new RegExp(e[0]);}catch(x){re=null;}return [re,e[1]];});}
+  compileIngred();
+  function ingredientDesc(name){var out=[];for(var i=0;i<INGRED.length;i++){if(INGRED[i][0]&&INGRED[i][0].test(name))out=out.concat(INGRED[i][1]);}return out;}
+  /* 味タグ × カテゴリー適合（合う料理にだけ使う。food は常に許可） */
+  var TONE_CAT={
+    "あっさり":["soup_noodle","raw","salad_veg","rice","drink","hotpot","egg","food"],
+    "濃いめ":["grilled","simmered","soup_noodle","rice","fried","hotpot","bread","food"],
+    "出汁がきいてる":["soup_noodle","simmered","rice","egg","hotpot","food"],
+    "スパイシー":["grilled","fried","simmered","soup_noodle","hotpot","bread","food"],
+    "甘め":["sweet","drink","simmered","grilled","bread","food"],
+    "ジューシー":["grilled","fried","simmered","hotpot","food"],
+    "香ばしい":["grilled","fried","bread","food"],
+    "さっぱり":["raw","salad_veg","drink","soup_noodle","sweet","food"],
+    "コク深い":["soup_noodle","simmered","grilled","hotpot","drink","food"],
+    "ボリューム満点":["grilled","fried","rice","simmered","soup_noodle","hotpot","bread","food"],
+    "繊細な味付け":["raw","egg","sweet","soup_noodle","salad_veg","food"],
+    "素材が良い":["raw","salad_veg","grilled","sweet","food","soup_noodle","hotpot","bread"]
+  };
+  function toneFits(tag,cat){var a=TONE_CAT[tag];return !a||a.indexOf(cat)>=0;}
+
+  var SEASONX={
+    spring:["春らしい陽気に誘われての一軒","桜の便りが聞こえる頃にぴったり","うららかな昼下がりにちょうどいい","上着がいらなくなった頃のやわらかな空気","芽吹きの季節らしい軽やかな気分","日が長くなってきたのを実感する時間"],
+    summer:["蒸し暑さを忘れさせてくれる涼やかさ","夏の夜にキンと冷えた一杯が沁みる","火照った体にちょうどいい涼しさ","日が落ちても熱の残る街から逃げ込む心地よさ","汗が引いていく時間の気持ちよさ","冷房の効いた店内にほっとする夏の日"],
+    autumn:["秋の夜長にゆっくりしたくなる","実りの季節らしい満足感","肌寒くなってきた夜にあたたかい一軒","日暮れが早くなった街を歩いた後の一杯","空気が澄んでくる頃のしみじみとした時間","衣替えの時期らしい落ち着いた気分"],
+    winter:["底冷えする夜にあたたかさが沁みる","冬の寒さがほどける温もり","冷えた体に嬉しい一軒","かじかんだ手をおしぼりで温める幸せ","白い息を吐きながらたどり着いた安堵","外の寒さがかえってごちそうになる夜"]
+  };
+  var TIMEX={"夜":["一日の終わりにほっと一息","仕事終わりのごほうびに","灯りのともる時間帯ならではの落ち着き","何も予定のない夜のぜいたく"],
+              "昼":["明るい時間にゆっくりと","休日のランチにぴったり","陽の入る時間に味わう心地よさ","午後の予定まで少し間のある時間に"]};
+  function seasonOf(mo){return (mo>=3&&mo<=5)?"spring":(mo>=6&&mo<=8)?"summer":(mo>=9&&mo<=11)?"autumn":"winter";}
+
+  /* ======== 辞書エンジン（プリセット＋GUI追加＋相性調整＋外部JSONを合成） ======== */
+  var DKEY="satto_dict_v2";
+  var CATS=["drink","sweet","soup_noodle","simmered","hotpot","raw","egg","fried","grilled","salad_veg","rice","bread","food"];
+  function clone(o){return JSON.parse(JSON.stringify(o));}
+  var DEFAULTS={MOODX:clone(MOODX),TONEX:clone(TONEX),GENRE_TONE:clone(GENRE_TONE),GENREX:clone(GENREX),CAT_DESC:clone(CAT_DESC),TONE_CAT:clone(TONE_CAT),SEASONX:clone(SEASONX),TIMEX:clone(TIMEX),INGRED_DEF:clone(INGRED_DEF)};
+  var DEF_LEX=LEX_VER;
+  var PRESETS=[
+    {id:"sushi",name:"寿司・海鮮パック",desc:"ネタの語彙を強化（寿司専用）",dict:{version:LEX_VER+"+寿司",genres:["寿司"],
+      ingred:[["こはだ|コハダ",["酢締めの効いたこはだ","ほどよい酸味のこはだ"]],["赤貝",["コリコリと磯の香る赤貝"]],["煮穴子|煮あなご",["ふわりとほどける煮穴子","甘いツメの香る穴子"]],["ぶり大根",["味の染みた鰤大根"]],["軍艦|軍艦巻",["海苔の香る軍艦巻き"]],["漬け|づけ",["旨みの凝縮した漬け"]]],
+      genrex:{"寿司":["職人の握るタイミングの妙","おまかせで愉しむ季節のネタ","一貫ごとに変わる仕事の妙"]}}},
+    {id:"ramen",name:"ラーメン特化パック",desc:"スープ・麺の語彙を強化（ラーメン専用）",dict:{version:LEX_VER+"+麺",genres:["ラーメン"],
+      ingred:[["つけ麺|つけそば",["濃厚なつけだれによく絡む太麺"]],["魚介豚骨|Wスープ",["魚介の香る濃厚Wスープ"]],["鶏白湯|とりぱいたん",["とろりと濃厚な鶏白湯"]],["替え玉|かえだま",["替え玉までしっかり楽しめる一杯"]],["チャーシュー麺",["肉厚チャーシューの満足感"]]],
+      genrex:{"ラーメン":["スープまで飲み干したくなる完成度","麺・スープ・具の一体感","行列も納得の一杯"]}}},
+    {id:"yakiniku",name:"焼肉・部位パック",desc:"希少部位の語彙を追加（焼肉専用）",dict:{version:LEX_VER+"+焼肉",genres:["焼肉"],
+      ingred:[["ミスジ|みすじ",["きめ細かなサシのミスジ"]],["ザブトン|ざぶとん",["とろける霜降りのザブトン"]],["イチボ|いちぼ",["赤身の旨みが濃いイチボ"]],["上ミノ|ミノ",["コリっと弾ける上ミノ"]],["ハツ|はつ",["歯切れのいい新鮮なハツ"]],["塩タン|上タン",["レモンが映える厚切り上タン"]]],
+      genrex:{"焼肉":["希少部位まで揃う品揃え","肉質で選ばれる一軒"]}}},
+    {id:"cafe",name:"カフェ・スイーツパック",desc:"珈琲と甘味の語彙を強化（カフェ/スイーツ）",dict:{version:LEX_VER+"+甘",genres:["カフェ","スイーツ"],
+      ingred:[["フレンチトースト",["外はカリッと中はとろけるフレンチトースト"]],["スコーン",["さっくり素朴なスコーン"]],["カヌレ",["外は香ばしく中はもっちりのカヌレ"]],["フラットホワイト|カプチーノ",["ミルクの甘みが引き立つ一杯"]],["季節のフルーツ|旬のフルーツ",["旬の果実の瑞々しさ"]]],
+      genrex:{"カフェ":["長居したくなる心地よい時間","一杯一杯に感じる丁寧さ"],"スイーツ":["宝石のような美しい盛り付け"]}}},
+    {id:"kansai",name:"関西グルメパック",desc:"粉もの・関西名物を追加",dict:{version:LEX_VER+"+関西",
+      ingred:[["たこ焼き|たこやき",["外はとろっと中はふわとろのたこ焼き"]],["お好み焼き|お好み",["ふっくら香ばしいお好み焼き"]],["串カツ|串かつ",["サクッと軽い衣の串カツ"]],["どて焼き|どて煮",["味噌がしみたとろとろのどて焼き"]],["ねぎ焼き",["ねぎたっぷりの香ばしい一枚"]]],
+      genrex:{"居酒屋":["粉ものからアテまで幅広い品揃え","ソースの香りが食欲をそそる"]}}}
+  ];
+  var PRESET_BY_ID={};PRESETS.forEach(function(p){PRESET_BY_ID[p.id]=p;});
+  var DEF_CAT_ORDER=CAT_ORDER.slice(), DEF_CATS=CATS.slice(), DEF_CAT_LABEL=clone(CAT_LABEL);
+  var customState={presets:[],entries:{ingred:[],genrex:{},toneCat:{},cats:[]}};
+  (function(){try{var cs=JSON.parse(localStorage.getItem(DKEY)||"null");if(cs&&typeof cs==="object"){customState.presets=cs.presets||[];customState.entries=cs.entries||{};}}catch(e){}
+    var en=customState.entries;if(!en.ingred)en.ingred=[];if(!en.genrex)en.genrex={};if(!en.toneCat)en.toneCat={};if(!en.cats)en.cats=[];
+    if(!customState.myPacks)customState.myPacks=[];if(!customState.mergeMode)customState.mergeMode="combine";})();
+  var GENRE_LIST=["居酒屋","カフェ","バル・ワイン","焼き鳥","焼肉","寿司","ラーメン","そば・うどん","イタリアン","フレンチ","中華","定食・食堂","スイーツ"];
+  function uniqArr(a){var s={},o=[];a.forEach(function(x){if(!s[x]){s[x]=1;o.push(x);}});return o;}
+  function appendArr(t,s){if(!s)return;for(var k in s){if(s.hasOwnProperty(k))t[k]=uniqArr((t[k]||[]).concat(s[k]));}}
+  function assignObj(t,s){if(!s)return;for(var k in s){if(s.hasOwnProperty(k))t[k]=s[k];}}
+  function applyLayer(d){
+    if(!d)return;
+    if(d.ingred&&d.ingred.length)INGRED_DEF=d.ingred.concat(INGRED_DEF);
+    appendArr(GENREX,d.genrex);appendArr(CAT_DESC,d.catDesc);appendArr(MOODX,d.moodx);appendArr(TONEX,d.tonex);appendArr(SEASONX,d.seasonx);appendArr(TIMEX,d.timex);
+    assignObj(GENRE_TONE,d.genreTone);
+    if(d.toneCat)for(var k in d.toneCat){if(d.toneCat.hasOwnProperty(k))TONE_CAT[k]=d.toneCat[k];}
+    if(d.version)LEX_VER=d.version;
+  }
+  var activeGenre=null;
+  function genreOK(gs,genre){return !gs||!gs.length||(genre&&gs.indexOf(genre)>=0);}
+  function activeLayers(genre){
+    var L=[];
+    customState.presets.forEach(function(id){var p=PRESET_BY_ID[id];if(p&&genreOK(p.dict.genres,genre))L.push(p.dict);});
+    (customState.myPacks||[]).forEach(function(p){if(p.enabled&&p.dict&&genreOK(p.genres,genre))L.push(p.dict);});
+    L.push(customState.entries);
+    return L;
+  }
+  function recompose(){
+    MOODX=clone(DEFAULTS.MOODX);TONEX=clone(DEFAULTS.TONEX);GENRE_TONE=clone(DEFAULTS.GENRE_TONE);GENREX=clone(DEFAULTS.GENREX);CAT_DESC=clone(DEFAULTS.CAT_DESC);TONE_CAT=clone(DEFAULTS.TONE_CAT);SEASONX=clone(DEFAULTS.SEASONX);TIMEX=clone(DEFAULTS.TIMEX);INGRED_DEF=clone(DEFAULTS.INGRED_DEF);LEX_VER=DEF_LEX;
+    CAT_LABEL=clone(DEF_CAT_LABEL);CATS=DEF_CATS.slice();
+    var layers=activeLayers(activeGenre);
+    layers.forEach(applyLayer);
+    /* 重複の統合ルール：override＝上位パックで上書き（同一パターンは先頭のみ残す） */
+    if(customState.mergeMode==="override"){var seen={},out=[];INGRED_DEF.forEach(function(e){if(!seen[e[0]]){seen[e[0]]=1;out.push(e);}});INGRED_DEF=out;}
+    /* カテゴリー統合：優先度順に先頭へ（ユーザー定義が組み込みより優先） */
+    var userCats=[];CAT_ORDER=DEF_CAT_ORDER.slice();
+    layers.forEach(function(l){(l.cats||[]).forEach(function(c){userCats.push(c);});});
+    var head=[],seenC={};
+    userCats.forEach(function(c){
+      if(!c||!c.id)return;
+      if(customState.mergeMode==="override"&&seenC[c.id])return;seenC[c.id]=1;
+      var re=null;try{re=new RegExp(c.pattern);}catch(x){}
+      if(re)head.push([c.id,re]);
+      if(CATS.indexOf(c.id)<0){var fi=CATS.indexOf("food");CATS.splice(fi<0?CATS.length:fi,0,c.id);}
+      CAT_LABEL[c.id]=c.label||c.id;CAT_DESC[c.id]=uniqArr((CAT_DESC[c.id]||[]).concat(c.desc||[]));
+    });
+    CAT_ORDER=head.concat(DEF_CAT_ORDER);
+    compileIngred();
+  }
+  function setActiveGenre(g){if(activeGenre!==g){activeGenre=g;recompose();}}
+  function dupIngredReport(genre){
+    var layers=activeLayers(genre),cnt={};
+    layers.forEach(function(l){(l.ingred||[]).forEach(function(e){cnt[e[0]]=(cnt[e[0]]||0)+1;});});
+    var d=[];for(var k in cnt)if(cnt[k]>1)d.push(k);return d;
+  }
+  function setMergeMode(m){customState.mergeMode=m;persistDict();recompose();}
+  function setPackGenres(id,genres){var p=findPack(id);if(p){p.genres=genres;persistDict();recompose();}}
+
+  /* ===== 総合バリデーション（未定義カテゴリー参照ほか） ===== */
+  function validateAll(){
+    var issues=[],known={};CATS.forEach(function(c){known[c]=1;});DEF_CATS.forEach(function(c){known[c]=1;});
+    (customState.entries.cats||[]).forEach(function(c){known[c&&c.id]=1;});
+    (customState.myPacks||[]).forEach(function(p){(p.dict&&p.dict.cats||[]).forEach(function(c){known[c&&c.id]=1;});});
+    var seenId={};
+    (customState.entries.cats||[]).forEach(function(c){
+      if(!c||!c.id||!/^[A-Za-z0-9_]+$/.test(c.id))issues.push(["error","カテゴリーIDが不正："+((c&&c.id)||"(空)")]);
+      else{if(seenId[c.id])issues.push(["error","カテゴリーID重複："+c.id]);seenId[c.id]=1;if(DEF_CATS.indexOf(c.id)>=0)issues.push(["warn","組み込みと同名のカテゴリー："+c.id]);}
+      if(c&&!(c.desc&&c.desc.length))issues.push(["warn","カテゴリー「"+((c&&(c.label||c.id))||"?")+"」に表現がありません"]);
+      if(c&&c.pattern){var e=safeRegex(c.pattern);if(e)issues.push(["error","カテゴリー「"+(c.label||c.id)+"」パターン："+e]);}
+    });
+    function checkTC(tc,src){for(var tag in tc){(tc[tag]||[]).forEach(function(cat){if(!known[cat])issues.push([src==="user"?"error":"warn",(src==="user"?"相性":"パック相性")+"「"+tag+"」が未定義カテゴリー「"+cat+"」を参照"]);});}}
+    checkTC(customState.entries.toneCat||{},"user");
+    (customState.myPacks||[]).forEach(function(p){checkTC((p.dict&&p.dict.toneCat)||{},"pack");});
+    var pseen={};
+    customState.entries.ingred.forEach(function(e){
+      var er=safeRegex(e[0]);if(er)issues.push(["error","食材「"+e[0]+"」："+er]);
+      if(pseen[e[0]])issues.push(["warn","食材パターン重複："+e[0]]);pseen[e[0]]=1;
+      if(!(e[1]&&e[1].length))issues.push(["warn","食材「"+e[0]+"」に表現がありません"]);
+    });
+    var gx=customState.entries.genrex||{};for(var g in gx)if(GENRE_LIST.indexOf(g)<0)issues.push(["warn","ジャンル語の不明ジャンル："+g]);
+    (customState.myPacks||[]).forEach(function(p){(p.genres||[]).forEach(function(gn){if(GENRE_LIST.indexOf(gn)<0)issues.push(["warn","パック「"+p.name+"」の不明ジャンル："+gn]);});});
+    return issues;
+  }
+
+  /* ===== 統計 ===== */
+  var SAMPLE_DISHES={
+    "居酒屋":["刺身","焼き鳥","だし巻き玉子","唐揚げ","枝豆","ハイボール","〆のお茶漬け","冷奴"],
+    "寿司":["マグロ","サーモン","こはだ","うに","いくら","玉子","穴子","ホタテ"],
+    "焼肉":["カルビ","ハラミ","上タン塩","ホルモン","ユッケ","ロース","サラダ","クッパ"],
+    "ラーメン":["醤油ラーメン","味噌ラーメン","豚骨","つけ麺","餃子","チャーシュー","替え玉"],
+    "カフェ":["ブレンドコーヒー","カフェラテ","チーズケーキ","パンケーキ","スコーン","抹茶"],
+    "イタリアン":["パスタ","ピザ","カルパッチョ","トマト","チーズ","ティラミス"]
+  };
+  function statsCoverage(){
+    var rows=[],saved=activeGenre;
+    for(var g in SAMPLE_DISHES){
+      var arr=SAMPLE_DISHES[g],hit=0;setActiveGenre(g);
+      arr.forEach(function(d){if(ingredientDesc(d).length||classifyDish(d)!=="food")hit++;});
+      rows.push({genre:g,pct:Math.round(hit/arr.length*100),hit:hit,total:arr.length});
+    }
+    activeGenre=saved;recompose();
+    return rows;
+  }
+  function statsTotals(){
+    var baseIng=DEFAULTS.INGRED_DEF.length,custIng=customState.entries.ingred.length,packIng=0,presetIng=0;
+    (customState.myPacks||[]).forEach(function(p){if(p.dict.ingred)packIng+=p.dict.ingred.length;});
+    customState.presets.forEach(function(id){var p=PRESET_BY_ID[id];if(p&&p.dict.ingred)presetIng+=p.dict.ingred.length;});
+    var baseG=0;for(var g in DEFAULTS.GENREX)baseG+=DEFAULTS.GENREX[g].length;
+    return {totalIng:baseIng+custIng+packIng+presetIng,baseIng:baseIng,custIng:custIng,packIng:packIng,presetIng:presetIng,
+      baseCats:DEF_CATS.length,custCats:(customState.entries.cats||[]).length,baseG:baseG,
+      enabledPacks:(customState.myPacks||[]).filter(function(p){return p.enabled;}).length,presetsOn:customState.presets.length};
+  }
+
+  /* ===== バックアップ／端末間引き継ぎ ===== */
+  function exportAllState(){
+    var payload={_app:"satto",_v:APP_VER,dict:customState,
+      drafts:(function(){try{return JSON.parse(localStorage.getItem(KEY)||"[]");}catch(e){return[];}})(),
+      persona:(function(){try{return JSON.parse(localStorage.getItem(PKEY)||"{}");}catch(e){return{};}})()};
+    var json=JSON.stringify(payload);
+    try{return btoa(unescape(encodeURIComponent(json)));}catch(e){return json;}
+  }
+  function importAllState(code){
+    var json,o;
+    try{json=decodeURIComponent(escape(atob(code.trim())));}catch(e){json=code;}
+    try{o=JSON.parse(json);}catch(e){return {ok:false,msg:"コードを読み取れませんでした"};}
+    if(!o||o._app!=="satto")return {ok:false,msg:"このアプリの引き継ぎコードではありません"};
+    try{
+      if(o.dict){customState=o.dict;var en=customState.entries||{};if(!en.ingred)en.ingred=[];if(!en.genrex)en.genrex={};if(!en.toneCat)en.toneCat={};if(!en.cats)en.cats=[];customState.entries=en;if(!customState.presets)customState.presets=[];if(!customState.myPacks)customState.myPacks=[];if(!customState.mergeMode)customState.mergeMode="combine";persistDict();recompose();}
+      /* 保存は個別に試し、容量超過などで一部が入らなくても何が入らなかったかを正直に返す */
+      var warn=[];
+      if(o.drafts&&!safeSet(KEY,JSON.stringify(o.drafts)))warn.push("下書き");
+      if(o.persona&&!safeSet(PKEY,JSON.stringify(o.persona)))warn.push("人物設定");
+      return {ok:true,warn:warn};
+    }catch(e){return {ok:false,msg:"復元に失敗しました"};}
+  }
+  function ingredConflicts(pat){
+    var alts=String(pat).split("|").map(function(s){return s.trim();}).filter(Boolean),msgs=[];
+    customState.entries.ingred.forEach(function(e){if(e[0]===pat)msgs.push("同じパターン「"+pat+"」が既に登録されています");});
+    alts.forEach(function(a){
+      for(var i=0;i<INGRED.length;i++){if(INGRED[i][0]&&INGRED[i][0].test(a)){msgs.push("「"+a+"」は既存の表現と重なります（例："+(INGRED[i][1][0]||"")+"）");break;}}
+    });
+    return uniqArr(msgs);
+  }
+  /* ===== 安全性チェック（不正な正規表現・危険なパターン・構造） ===== */
+  function safeRegex(p){
+    if(typeof p!=="string"||!p)return "パターンが空です";
+    if(p.length>200)return "パターンが長すぎます";
+    if(/(\([^)]*[+*][^)]*\)[+*])|([+*]\s*[+*])/.test(p))return "危険なパターン（多重量化）です";
+    try{new RegExp(p);}catch(e){return "正規表現エラー: "+e.message;}
+    return null;
+  }
+  function validatePack(o){
+    var errors=[],warns=[],cleaned={};
+    if(!o||typeof o!=="object")return {ok:false,errors:["JSONがオブジェクトではありません"],warns:[],cleaned:{}};
+    if(o.name)cleaned.name=String(o.name).slice(0,60);
+    if(Array.isArray(o.ingred)){
+      cleaned.ingred=[];
+      o.ingred.forEach(function(e,i){
+        if(!Array.isArray(e)||e.length<2||!Array.isArray(e[1])){warns.push("ingred["+i+"]の形式が不正（スキップ）");return;}
+        var err=safeRegex(e[0]);if(err){errors.push("食材 "+i+"：「"+e[0]+"」— "+err+"（スキップ）");return;}
+        cleaned.ingred.push([String(e[0]),e[1].map(String).slice(0,12)]);
+      });
+      if(cleaned.ingred.length>500){cleaned.ingred=cleaned.ingred.slice(0,500);warns.push("食材が多すぎるため500件に制限");}
+    }
+    if(Array.isArray(o.cats)){
+      cleaned.cats=[];
+      o.cats.forEach(function(c,i){
+        if(!c||!c.id||!/^[A-Za-z0-9_]+$/.test(c.id)){errors.push("カテゴリー "+i+"：IDが不正（スキップ）");return;}
+        var err=safeRegex(c.pattern);if(err){errors.push("カテゴリー "+(c.label||c.id)+"："+err+"（スキップ）");return;}
+        cleaned.cats.push({id:c.id,label:String(c.label||c.id).slice(0,20),pattern:String(c.pattern),desc:(Array.isArray(c.desc)?c.desc.map(String).slice(0,12):[])});
+      });
+    }
+    ["genrex","catDesc","toneCat","moodx","tonex","seasonx","timex","genreTone"].forEach(function(k){if(o[k]&&typeof o[k]==="object")cleaned[k]=o[k];});
+    return {ok:errors.length===0,errors:errors,warns:warns,cleaned:cleaned};
+  }
+  function packToDict(en){
+    var o={};
+    if(en.ingred&&en.ingred.length)o.ingred=en.ingred;
+    if(en.genrex&&Object.keys(en.genrex).length)o.genrex=en.genrex;
+    if(en.catDesc&&Object.keys(en.catDesc).length)o.catDesc=en.catDesc;
+    if(en.toneCat&&Object.keys(en.toneCat).length)o.toneCat=en.toneCat;
+    if(en.cats&&en.cats.length)o.cats=en.cats;
+    return o;
+  }
+  function buildPresetJSON(name){var o=packToDict(customState.entries);o.name=name||"マイパック";o.version=name||"custom";return JSON.stringify(o,null,2);}
+  function buildPackJSON(pack){var o=clone(pack.dict||{});o.name=pack.name;o.version=pack.name;return JSON.stringify(o,null,2);}
+  function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+  function isEntriesEmpty(){var en=customState.entries;return !((en.ingred&&en.ingred.length)||(en.cats&&en.cats.length)||(en.genrex&&Object.keys(en.genrex).length)||(en.toneCat&&Object.keys(en.toneCat).length));}
+  function savePackFromEntries(name){
+    if(isEntriesEmpty())return false;
+    customState.myPacks.unshift({id:genId(),name:name||("マイパック "+(customState.myPacks.length+1)),enabled:true,dict:clone(packToDict(customState.entries))});
+    customState.entries={ingred:[],genrex:{},toneCat:{},cats:[]};
+    persistDict();recompose();return true;
+  }
+  function togglePackEnabled(id){var p=findPack(id);if(p){p.enabled=!p.enabled;persistDict();recompose();}}
+  function renamePack(id,name){var p=findPack(id);if(p){p.name=String(name).slice(0,60);persistDict();recompose();}}
+  function deletePack(id){customState.myPacks=customState.myPacks.filter(function(p){return p.id!==id;});persistDict();recompose();}
+  function movePack(id,dir){var a=customState.myPacks,i=a.map(function(p){return p.id;}).indexOf(id),j=i+dir;if(i<0||j<0||j>=a.length)return;var t=a[i];a[i]=a[j];a[j]=t;persistDict();recompose();}
+  function findPack(id){for(var i=0;i<customState.myPacks.length;i++)if(customState.myPacks[i].id===id)return customState.myPacks[i];return null;}
+  function addCatEntry(c){customState.entries.cats=customState.entries.cats||[];customState.entries.cats.push(c);persistDict();recompose();}
+  function removeCatEntry(i){customState.entries.cats.splice(i,1);persistDict();recompose();}
+  function moveCat(i,dir){var a=customState.entries.cats,j=i+dir;if(j<0||j>=a.length)return;var t=a[i];a[i]=a[j];a[j]=t;persistDict();recompose();}
+  function safeSet(k,v){try{localStorage.setItem(k,v);return true;}catch(e){return false;}}
+  function persistDict(){safeSet(DKEY,JSON.stringify(customState));}
+  function addIngredEntry(pat,arr){customState.entries.ingred.unshift([pat,arr]);persistDict();recompose();}
+  function removeIngredEntry(i){customState.entries.ingred.splice(i,1);persistDict();recompose();}
+  function addGenrexEntry(g,p){var m=customState.entries.genrex;m[g]=(m[g]||[]);m[g].push(p);persistDict();recompose();}
+  function removeGenrexEntry(g,i){customState.entries.genrex[g].splice(i,1);if(!customState.entries.genrex[g].length)delete customState.entries.genrex[g];persistDict();recompose();}
+  function setToneCatEntry(tag,cats){customState.entries.toneCat[tag]=cats;persistDict();recompose();}
+  function togglePreset(id){var i=customState.presets.indexOf(id);if(i>=0)customState.presets.splice(i,1);else customState.presets.push(id);persistDict();recompose();}
+  /* JSON取り込み → 安全性チェックのうえ、ライブラリのパックとして追加 */
+  function importDict(o){
+    var v=validatePack(o);
+    if(!Object.keys(v.cleaned).some(function(k){return k!=="name"&&k!=="version";}))return {ok:false,errors:v.errors.length?v.errors:["取り込める内容がありません"],warns:v.warns};
+    var nm=v.cleaned.name||"取り込みパック";delete v.cleaned.name;delete v.cleaned.version;
+    customState.myPacks.unshift({id:genId(),name:nm,enabled:true,dict:v.cleaned});
+    persistDict();recompose();
+    return {ok:true,errors:v.errors,warns:v.warns,name:nm};
+  }
+  function resetDict(){customState={presets:[],myPacks:[],mergeMode:"combine",entries:{ingred:[],genrex:{},toneCat:{},cats:[]}};persistDict();recompose();}
+  recompose();
+  var DICT_TEMPLATE=JSON.stringify({version:"2026.10-custom",ingred:[["ふぐ|河豚",["淡白ながら旨みの詰まったふぐ"]]],genrex:{"焼き鳥":["おまかせで頼みたくなる串の充実"]}},null,2);
+
+  /* つなぎ・文末（滑らかに） */
+  var ATMO_EVAL={soft:["すっかりくつろげました。","ゆっくりと落ち着けました。","つい長居してしまいました。","居心地は申し分ありません。","肩の力がふっと抜けました。","座った瞬間から心地よく過ごせました。","時間を忘れて過ごしてしまいました。","また座りに来たくなる空間でした。"],
+                 casual:["すっかりくつろげた。","ゆっくり落ち着けた。","つい長居してしまった。","居心地は申し分ない。","肩の力がふっと抜けた。","座った瞬間から居心地がよかった。","時間を忘れて過ごしてしまった。","また座りに来たくなる空間。"]};
+  var DISH_EVAL={soft:["大満足の一皿でした。","文句なしの美味しさでした。","思わず箸が止まりませんでした。","何度でも頼みたい味でした。","これだけで来た甲斐がありました。","期待をやすやすと超えてきました。","注文して正解でした。","想像していたよりずっと良かったです。","これは人に教えたくなる味でした。","最後のひと口まで美味しくいただきました。"],
+                 casual:["大満足の一皿だった。","文句なしのうまさ。","思わず箸が止まらなかった。","何度でも頼みたい味。","これだけで来た甲斐があった。","期待をやすやすと超えてきた。","頼んで正解だった。","想像よりずっと良かった。","これは人に教えたくなる味。","最後のひと口まで美味しかった。"]};
+  var GENRE_END={soft:["でした。","が印象的でした。","も嬉しいところ。","。","にも惹かれました。","も含めて好印象でした。"],
+                 casual:["だった。","が印象的。","もよかった。","。","にも惹かれた。","も含めて好印象。"]};
+  var DISH_OTHERS2={soft:["ほかに頼んだ{list}も、どれも手堅い味でした。","{list}まで手抜きがなく、最後まで満足でした。","{list}も安定していて、外れがありません。","{list}にも同じ丁寧さがありました。","あわせて頼んだ{list}も期待どおりでした。","{list}も、それぞれきちんと仕事がされていました。"],
+                    casual:["ほかに頼んだ{list}も、どれも手堅い味だった。","{list}まで手抜きがなく、最後まで満足。","{list}も安定していて、外れなし。","{list}にも同じ丁寧さがあった。","あわせて頼んだ{list}も期待どおり。","{list}も、それぞれきちんと仕事がされていた。"]};
+  var TOPIC1=["まず頼んだ{d}は、","看板の{d}は、","この日の主役、{d}は、","お目当ての{d}は、","一番の当たりだった{d}は、","楽しみにしていた{d}は、","真っ先に運ばれてきた{d}は、","これが目当てだった{d}は、","やはり外せない{d}は、","迷わず頼んだ{d}は、"];
+  var COMBO2=["{a}に始まり{b}で締めるまで、","{a}も{b}も外せず、","{a}から{b}まで、","{a}と{b}、どちらも譲れず、","{a}に続けて頼んだ{b}まで、","{a}、そして{b}と重ねて、"];
+  var POS_LEAD=["何より、","とにかく、","個人的には、","うれしいことに、","そして、","特に、","気に入ったのは、","印象に残ったのは、","忘れがたいのは、","何度でも言いたいのは、"];
+  var POS_LEAD2=["それに、","あと、","そして、","加えて、","さらに言えば、","それから、"];
+  var POS_TAIL={soft:["すっかり気に入りました。","そこが好きです。","また来たくなりました。","嬉しくなりました。","そこに惹かれました。","この一点だけでも来る価値があります。","細かいところですが、効いていました。"],
+                casual:["すっかり気に入った。","そこが好き。","また来たくなった。","嬉しくなった。","そこに惹かれた。","この一点だけでも来る価値あり。","細かいところだけど、効いていた。"]};
+  var NEG_LEAD_HI=["強いて言えば、","あえて挙げるなら、","ひとつだけ言うと、","欲を言えば、","細かいことを承知で書くと、"];
+  var NEG_REASSURE={soft:["それ以外は大満足でした。","でも全体は文句なしです。","気になったのはそのくらいです。","とはいえ再訪を迷う理由にはなりません。","差し引いても十分におすすめできます。"],
+                    casual:["それ以外は大満足。","でも全体は文句なし。","気になったのはそのくらい。","とはいえ再訪を迷う理由にはならない。","差し引いても十分おすすめできる。"]};
+  var NEG_LEAD_MID=["ただ、","気になったのは、","惜しいのは、","個人的には、","少しだけ引っかかったのは、","次に期待したいのは、"];
+  /* v3.9：名詞句を一文に仕立てる（体言止め／述語化）— 「〜で、〜で、」一辺倒を避ける */
+  var NP_SENT={soft:["{np}。","{np}が印象に残ります。","{np}に思わず唸りました。","まず{np}に目を奪われました。","{np}がしっかり伝わってきます。","何より{np}が光っていました。"],
+               casual:["{np}。","{np}が印象に残る。","{np}に思わず唸った。","まず{np}に目を奪われた。","{np}がしっかり伝わってくる。","何より{np}が光っていた。"]};
+  /* 名詞句どうしをつなぐ助詞（最後の1つは必ず述語へ渡せる形にする） */
+  var NP_JOIN=["で、","に、","、そして","と、"];
+  var NP_JOIN_MID=["に、","、そして","と、"];
+  var BUDGET_LINE={soft:["お会計は{b}ほど。","会計は{b}ほどでした。","{b}ほどで、納得のいく内容でした。","支払いは{b}ほどでした。","ひとり{b}ほどで収まりました。"],
+                   casual:["お会計は{b}ほど。","会計は{b}ほどだった。","{b}ほどで、納得の内容。","支払いは{b}ほど。","ひとり{b}ほどで収まった。"]};
+  function npSent(np,reg,st){return fill(er(NP_SENT,reg,st),{np:np});}
+  /* 名詞句の配列を助詞を散らしながら1本に連ね、末尾は述語へ渡せる「で、」で閉じる */
+  function chainNP(nps){
+    if(!nps||!nps.length)return "";
+    var s="",prev="";
+    for(var i=0;i<nps.length;i++){
+      s+=nps[i];
+      if(i===nps.length-1){s+="で、";break;}
+      /* 末尾は必ず「で、」になるため、その直前では「で、」を使わず隣接を防ぐ。同じ助詞も続けない */
+      var pool=(i===nps.length-2||!chance(0.2))?NP_JOIN_MID:["で、"];
+      pool=pool.filter(function(x){return x!==prev;});
+      if(!pool.length)pool=NP_JOIN_MID;
+      prev=rand(pool);s+=prev;
+    }
+    return s;
+  }
+
+  /* ---------- voice ---------- */
+  var CHAR={
+    "丁寧・上品":{soft:true,pron:["わたし","私"],excl:"。",jargon:false,
+      close:{high:["また訪れたいお店です","ぜひ再訪したく思います","気持ちよく過ごせる一軒でした","丁寧な仕事にすっかり満足しました","人にも自信を持って薦められる一軒です","次の機会が今から楽しみです"],
+             mid:["落ち着いて過ごせるお店でした","また立ち寄りたいですね","満ち足りたひとときでした","肩の力を抜いて過ごせました","気負わずうかがえるお店です"],
+             low:["また機会があればうかがいます","ごちそうさまでした","次は別の品を試してみたいと思います"]}},
+    "フレンドリー":{soft:true,pron:["私","僕"],excl:"！",jargon:false,
+      close:{high:["また絶対行きます","これはリピ確定","いや〜大満足でした","近かったら通っちゃうやつ","友だちにも教えたくなりました","次は何頼むか今から悩みます"],
+             mid:["また行きたいな〜","気軽に行けるいいお店","ふらっと寄るのにぴったり","普通に良かったです","肩肘張らずに行けます"],
+             low:["また機会があれば〜","ごちそうさまでした","次はちがうの頼んでみます"]}},
+    "グルメ通":{soft:true,pron:["私"],excl:"。",jargon:true,
+      close:{high:["再訪必至の一軒です","人に薦めたくなる完成度でした","次は別の品も手繰りたいところです","地力を感じる良店でした","この価格帯では頭ひとつ抜けています","構成に一本筋の通った店でした"],
+             mid:["安定感のある一軒でした","日常使いにも良さそうです","過不足のない構成でした","定点観測したくなる店です","悪くない選択でした"],
+             low:["伸びしろに期待したいところです","ごちそうさまでした","時間を置いて再訪したいところです"]}},
+    "テンション高め":{soft:false,pron:["俺","私","うち"],excl:"！！",jargon:false,
+      close:{high:["マジでまた行く","優勝でした","一生通うわこれ","語彙力が消えるうまさ","これはガチで名店","もう次の予約したい"],
+             mid:["また行こ","普通に良かった","満足度たかい","アリ寄りのアリ","気軽に行けるのがいい"],
+             low:["まぁアリ","ごちそうさま","次に期待"]}},
+    "クール辛口":{soft:false,pron:["私","僕"],excl:"。",jargon:false,
+      close:{high:["再訪の価値あり","素直に良かった","悪くない、また来る","期待は超えてきた","値段分はきっちり返ってくる","ここは認めざるを得ない"],
+             mid:["まあ悪くない","及第点","好みではある","悪くはない、が突き抜けもしない","選択肢には入る"],
+             low:["期待値次第か","ごちそうさま","次があるなら、だが"]}},
+    "エモい・情緒派":{soft:true,pron:["私","僕"],excl:"。",jargon:false,
+      close:{high:["また、ここへ帰ってきたいと思いました","記憶に残る夜になりました","しあわせな時間でした","ずっと覚えていたい味です","こういう店に出会えるから、外食はやめられません","帰り道まで含めていい時間でした"],
+             mid:["ふっと肩の力が抜ける時間でした","また訪れたい場所です","静かに満たされました","日常に戻る前の、いい寄り道でした"],
+             low:["また、いつか","ごちそうさまでした","それでも、来てよかったと思います"]}}
+  };
+  var DIA={
+    "標準語":{},
+    "関西弁":{pron:["うち","俺"],phr:["いや、ほんま良かったわ","また来るわ、ここ","コスパも文句なしやで","これはリピート確定やな","知らん人には教えとうないくらいや"]},
+    "博多弁":{pron:["うち","俺"],phr:["ほんとよかったばい","また来るっちゃん","うまかったばい","こらたまらんかったと","また寄らせてもらうけん"]},
+    "京ことば":{pron:["うち"],phr:["よろしおしたえ","また寄せてもらいます","ほっこりしましたわ","ええお店どすなあ","おおきに、ごちそうさんでした"]},
+    "名古屋弁":{pron:["わし","俺"],phr:["どえりゃあ良かったがや","また来るでね","ええお店だて","こりゃあ値打ちもんだがや","次も楽しみだわ"]},
+    "広島弁":{pron:["わし","うち"],phr:["ぶち良かったけぇ、また来るわ","たまらんかったのう","ええ店じゃった","こりゃあ通うしかないのう","また寄らせてもらうけぇ"]},
+    "東北弁":{pron:["おら","わたし"],phr:["んめがったなや","また来っぺ","たいしたもんだべ","こらぁ、ええ店みっけだ","ごちそうさんでした"]},
+    "沖縄":{pron:["わん","私"],phr:["でーじまーさんかったさー","また来るね〜","ちむどんどんしたさー","いっぺーまーさんかったよ","次も楽しみさー"]}
+  };
+  function buildVoice(){
+    var chK=$("pChar").value||"丁寧・上品", diK=$("pDialect").value||"標準語";
+    var ch=CHAR[chK], di=DIA[diK]||{};
+    var gender=$("pGender").value, age=$("pAge").value, strength=parseInt($("pStrength").value,10);
+    var v={style:chK,dialect:diK,soft:ch.soft,excl:ch.excl,jargon:ch.jargon,close:ch.close,strength:strength,
+      phr:(di.phr&&strength>0?di.phr:[])};
+    var pron=ch.pron.slice();
+    if(gender==="男性")pron=["僕","俺"];else if(gender==="女性")pron=["私","わたし"];
+    if(di.pron&&strength>=2)pron=di.pron.slice();
+    v.pron=rand(pron);
+    if((age==="50代"||age==="60代以上")&&chK!=="テンション高め")v.excl="。";
+    v.jobLens=$("pJob").value.trim();
+    return v;
+  }
+  function currentMonth(){
+    var vm=$("visit").value.match(/(\d{1,2})\s*月/);
+    if(vm)return +vm[1];
+    if(photoDate)return photoDate.mo;
+    return new Date().getMonth()+1;
+  }
+
+  /* ======== CONTEXT ======== */
+  function buildCtx(){
+    setActiveGenre($("genre").value);
+    var v=buildVoice();
+    var dishes=splitKW($("dishes").value);
+    var forced=dishes.filter(function(d){return dishMeta[d]&&dishMeta[d].star;});
+    return {
+      v:v, reg:v.soft?"soft":"casual",
+      shop:$("shop").value.trim()||"このお店", area:$("area").value.trim(),
+      genre:$("genre").value, time:$("time").value,
+      dishes:dishes, forced:forced, dishMeta:dishMeta,
+      scene:picked("scene"), tone:picked("tone"), mood:picked("mood"),
+      score:parseFloat($("score").value), budget:$("budget").value,
+      pos:splitKW($("posMemo").value), neg:splitKW($("negMemo").value),
+      visit:$("visit").value.trim(), sceneryOn:$("pScenery").checked,
+      length:parseInt($("pLength").value,10),
+      season:seasonOf(currentMonth())
+    };
+  }
+  function ctxFlags(ctx){ctx.high=ctx.score>=4;ctx.low=ctx.score<3.5;ctx.loc=ctx.area?ctx.area+"の":"";ctx.forced=ctx.forced.filter(function(d){return ctx.dishes.indexOf(d)>=0;});
+    ctx.used=ctx.used||{}; /* 段落をまたいで同じ言い回しを使わないための共有メモ */
+    return ctx;}
+
+  /* ======== PART GENERATORS ======== */
+  function pTitle(ctx){
+    var g=ctx.genre, high=ctx.score>=4;
+    var star=ctx.forced.filter(function(d){return ctx.dishes.indexOf(d)>=0;})[0]||(ctx.dishes.length?ctx.dishes[0]:"");
+    var o=[];
+    if(star){
+      o.push(star+(high?"が最高だった":"が良かった")+g);
+      o.push(star+"目当てで通いたい"+g);
+      o.push(star+"に会いに行く"+g);
+      if(high)o.push(star+"だけでも行く価値のある"+g);
+    }
+    if(ctx.pos.length){
+      /* 入力語をそのまま使うため、活用語尾を足す型は避ける（「〜絶品のが嬉しい」のような崩れを防ぐ） */
+      o.push(stripEnd(ctx.pos[0])+"、そんな"+g);
+      o.push(stripEnd(ctx.pos[0])+"。"+(high?"忘れがたい":"気になる")+g+"でした");
+    }
+    if(ctx.area){
+      o.push(ctx.area+"で見つけた"+(high?"当たりの":"気になる")+g);
+      o.push(ctx.area+"に来たら寄りたい"+g);
+      if(high)o.push(ctx.area+"で通いたい"+g+"に出会いました");
+    }
+    if(ctx.tone.length){
+      o.push(ctx.tone[0]+"料理が魅力の"+g);
+      o.push(ctx.tone[0]+"が好きな人に薦めたい"+g);
+    }
+    if(ctx.mood.indexOf("落ち着く")>=0)o.push("ゆっくりできる"+g);
+    if(ctx.mood.indexOf("隠れ家的")>=0)o.push("見つけた隠れ家"+g);
+    if(ctx.mood.indexOf("ひとりでも入りやすい")>=0)o.push("ひとりでも気負わず入れる"+g);
+    if(ctx.mood.indexOf("店員さんが親切")>=0)o.push("接客まで気持ちのいい"+g);
+    if(ctx.scene.indexOf("デート")>=0)o.push("デートで使いたい"+g);
+    if(ctx.budget&&high)o.push("この値段でこの満足感の"+g);
+    o.push(high?"また通いたい"+g:"気軽に楽しめる"+g);
+    o.push(high?"期待以上だった"+g:"肩肘張らずに楽しめる"+g);
+    return rand(o);
+  }
+  function pOpen(ctx){
+    var v=ctx.v;
+    function S(p,c){return v.soft?p:c;}
+    var intro=[];
+    if(ctx.scene.length)intro.push(rand(ctx.scene)+"、"+ctx.loc+ctx.shop+"へ。");
+    intro.push(ctx.loc+ctx.shop+"に"+(ctx.time==="昼"?"ランチで":"")+S("行ってきました。","行ってきた。"));
+    intro.push((ctx.time==="夜"?"仕事終わりに":"ふらっと")+"、"+ctx.shop+S("に立ち寄りました。","に立ち寄った。"));
+    intro.push(ctx.shop+"、ずっと気になっていたお店。"+(ctx.scene.length?rand(ctx.scene)+S("来ました。","来た。"):""));
+    intro.push((ctx.area?ctx.area+"で":"")+"良さそうな"+ctx.genre+"を見つけたので"+S("入ってみました。","入ってみた。"));
+    intro.push("前から名前だけは聞いていた"+ctx.shop+"に、ようやく"+S("うかがいました。","行けた。"));
+    intro.push(ctx.loc+ctx.shop+"へ。"+(ctx.time==="昼"?"昼の":"夜の")+ctx.genre+"らしい時間を"+S("過ごしてきました。","過ごしてきた。"));
+    intro.push("この日は"+(ctx.scene.length?rand(ctx.scene):"ふらりと")+"、"+ctx.shop+S("を訪ねました。","を訪ねた。"));
+    if(ctx.area)intro.push(ctx.area+"を歩いていて目に留まった"+ctx.genre+"、"+ctx.shop+S("に入ってみました。","に入ってみた。"));
+    if(ctx.high)intro.push("結論から書くと、"+ctx.shop+"は"+S("当たりでした。","当たりだった。"));
+    var s=rand(intro);
+    if(v.jobLens&&chance(0.4)){
+      var lens=[v.jobLens+"目線でも気になっていました。"];
+      if(/ライタ|編集|グルメ|料理|シェフ|板前/.test(v.jobLens))lens.push(S("仕事柄、味には少しうるさい方です。","仕事柄、味にはちょっとうるさい。"));
+      else lens.push(v.jobLens+"の性で、つい細かく見てしまいます。");
+      s+=rand(lens);
+    }
+    var scenery="";
+    if(ctx.sceneryOn&&chance(0.5)){
+      var pool=(SEASONX[ctx.season]||[]).concat(TIMEX[ctx.time]||[]);
+      /* 時間帯と矛盾する情景（昼の訪問に「夜」など）は落とす。辞書に追加された表現にも効く */
+      var bad=(ctx.time==="昼")?/夜|晩/:/昼|午後|ランチ/;
+      var okPool=pool.filter(function(x){return !bad.test(x);});
+      pool=okPool.length?okPool:pool;
+      if(pool.length)scenery=rand(pool)+"。";
+    }
+    return scenery?s+"\n\n"+scenery:s;
+  }
+  function pMood(ctx){
+    if(!ctx.mood.length)return "";
+    var used=ctx.used||(ctx.used={}),st={last:"",prev:""},reg=ctx.reg;
+    var many=(ctx.length>=1)?0.6:0.3;
+    var nMood=(ctx.mood.length>1&&(chance(many)||ctx.length>=2))?((ctx.mood.length>2&&ctx.length>=2&&chance(0.4))?3:2):1;
+    var mm=shuffle(ctx.mood).slice(0,nMood);
+    var frs=mm.map(function(t){return pf(MOODX,t,used);});
+    /* 3つ以上そろったときは、ひとつを独立した一文に逃がして列挙の単調さを避ける */
+    if(frs.length>=3&&chance(0.55)){
+      var tail=frs.pop();
+      return chainNP(frs)+er(ATMO_EVAL,reg,st)+npSent(tail,reg,{last:"",prev:""});
+    }
+    return chainNP(frs)+er(ATMO_EVAL,reg,st);
+  }
+  function pDish(ctx){
+    var reg=ctx.reg,used=ctx.used||(ctx.used={}),st={last:"",prev:""},stNp={last:"",prev:""};
+    if(ctx.dishes.length){
+      var hi,others;
+      if(ctx.forced.length){hi=ctx.forced.slice(0,2);others=ctx.dishes.filter(function(d){return hi.indexOf(d)<0;});}
+      else{var ord=shuffle(ctx.dishes);var hc=Math.min(ord.length,(ord.length>=2&&chance(0.4))?2:1);hi=ord.slice(0,hc);others=ord.slice(hc);}
+      var main=hi[0], cat=classifyDish(main), pm=(ctx.dishMeta&&ctx.dishMeta[main])||{};
+      var descs=[];
+      /* 見出しで品名を出しているので、品名をそのまま繰り返す描写は候補があれば避ける */
+      function notEcho(arr,dn){var f=arr.filter(function(x){return x.indexOf(dn)<0;});return f.length?f:arr;}
+      function descFor(dn){var ig=notEcho(ingredientDesc(dn),dn).filter(function(x){return !used[x];});if(ig.length){var g=rand(ig);used[g]=1;return g;}return pf(CAT_DESC,classifyDish(dn),used);}
+      if(hi.length===2){
+        /* 2品はそれぞれ自分の料理に合う描写で地に足を付ける */
+        descs.push(descFor(hi[0]));descs.push(descFor(hi[1]));
+        /* どちらかの料理に合う味タグがあれば1つだけ足して厚みを出す */
+        var t2=ctx.tone.filter(function(t){return toneFits(t,classifyDish(hi[0]))||toneFits(t,classifyDish(hi[1]));});
+        if(t2.length&&(chance(0.5)||ctx.length>=2))descs.push(pt(ctx.genre,rand(t2),used));
+      } else {
+        /* ① 食材レベルの描写を最優先で1つ */
+        var ing=notEcho(ingredientDesc(main),main).filter(function(x){return !used[x];});
+        if(ing.length){var g=rand(ing);used[g]=1;descs.push(g);}
+        /* ② 品名ごとに味を指定していればそれを使う（なければ全体タグを適合フィルタ） */
+        var tones=(pm.tones&&pm.tones.length)?pm.tones.slice():ctx.tone.filter(function(t){return toneFits(t,cat);});
+        var nT=(tones.length>1&&(chance(0.5)||ctx.length>=2))?2:(tones.length?1:0);
+        shuffle(tones).slice(0,nT).forEach(function(t){descs.push(pt(ctx.genre,t,used));});
+        /* ③ カテゴリー固有の描写で地に足を付ける */
+        var target=ctx.length>=2?3:(ctx.length===0?1:2);
+        var guard=0;
+        while(descs.length<target&&guard++<8){var cd=pf(CAT_DESC,cat,used);if(descs.indexOf(cd)<0)descs.push(cd);}
+        descs=shuffle(descs).slice(0,ctx.length>=2?4:3);
+      }
+      var head=(hi.length===2)?fill(rand(COMBO2),{a:hi[0],b:hi[1]}):fill(rand(TOPIC1),{d:main});
+      var sent;
+      if(descs.length>=3&&chance(0.55)){
+        /* 描写が3つ以上あるときは最後の1つを独立した一文に逃がし、長い列挙を避ける */
+        var last=descs[descs.length-1];
+        sent=head+chainNP(descs.slice(0,-1))+er(DISH_EVAL,reg,st)+npSent(last,reg,stNp);
+      } else {
+        sent=head+chainNP(descs)+er(DISH_EVAL,reg,st);
+      }
+      /* 品名ごとのひとことを添える */
+      if(pm.note&&stripEnd(pm.note))sent+=rand(["とりわけ、","なかでも、","特に、"])+stripEnd(pm.note)+"。";
+      if(others.length&&(chance(0.6)||ctx.length>=2))sent+=fill(er(DISH_OTHERS2,reg,st),{list:joinJP(others.slice(0,3))});
+      /* ジャンルの一言は料理に直結させず、独立した所感として添える */
+      if((GENREX[ctx.genre]||[]).length&&(chance(0.4)||ctx.length>=2))sent+=pf(GENREX,ctx.genre,used)+er(GENRE_END,reg,st);
+      return sent;
+    } else if(ctx.tone.length){
+      /* 品名がないときは味タグだけで組む。タグが複数あれば連ねて厚みを出す */
+      var tn=shuffle(ctx.tone).slice(0,(ctx.tone.length>1&&(chance(0.5)||ctx.length>=2))?2:1);
+      var fs=tn.map(function(t){return pt(ctx.genre,t,used);});
+      return rand(["料理は全体に、","どの皿も、","出てくるものはどれも、","味の方向は一貫していて、"])+chainNP(fs)+er(DISH_EVAL,reg,st);
+    }
+    return "";
+  }
+  function pPos(ctx){
+    if(!ctx.pos.length)return "";
+    var reg=ctx.reg,st={last:""};
+    var pk=shuffle(ctx.pos).slice(0,(ctx.pos.length>1&&(chance(0.5)||ctx.length>=2))?2:1);
+    var s=rand(POS_LEAD)+stripEnd(pk[0])+"。";
+    if(pk.length===2)s+=rand(POS_LEAD2)+stripEnd(pk[1])+"。";
+    if(chance(0.7))s+=er(POS_TAIL,reg,st);
+    return s;
+  }
+  function pNeg(ctx){
+    if(!ctx.neg.length)return "";
+    var reg=ctx.reg,st={last:""},nk=stripEnd(rand(ctx.neg)),high=ctx.score>=4;
+    if(high){var s=rand(NEG_LEAD_HI)+nk+"。";if(chance(0.7))s+=er(NEG_REASSURE,reg,st);return s;}
+    return rand(NEG_LEAD_MID)+nk+"。";
+  }
+  function pClose(ctx){
+    var v=ctx.v,high=ctx.score>=4,low=ctx.score<3.5;
+    var pool=high?v.close.high:(low?v.close.low:v.close.mid);
+    var closer=rand(pool)+v.excl;
+    if(chance(0.25)&&!low){
+      var pre=rand(["今度は"+v.pron+"以外の誰かも連れて来たい","次はひとりで腰を据えたい","次は別の品も試したい","近所にあったら通ってしまいそう","この次は違う時間帯にも来てみたい"]);
+      closer=pre+v.excl+closer;
+    }
+    var dia=(v.phr.length&&chance(0.6))?rand(v.phr)+"。":"";
+    /* 予算は必ず独立した一文にする（締め文と直結させると係り受けが崩れるため） */
+    var last=(ctx.budget?fill(er(BUDGET_LINE,ctx.reg,{last:"",prev:""}),{b:ctx.budget}):"")+closer;
+    return dia?dia+"\n\n"+last:last;
+  }
+  var partFn={title:pTitle,open:pOpen,mood:pMood,dish:pDish,pos:pPos,neg:pNeg,close:pClose};
+  function genAll(ctx){return {title:pTitle(ctx),open:pOpen(ctx),mood:pMood(ctx),dish:pDish(ctx),pos:pPos(ctx),neg:pNeg(ctx),close:pClose(ctx)};}
+  var DEF_ORDER=["open","mood","dish","pos","neg","close"];
+  /* 構成の揺らし：料理を先に立てる型も混ぜる（neg は必ず pos の後、close は最後） */
+  function partOrder(){return chance(0.35)?["open","dish","mood","pos","neg","close"]:DEF_ORDER.slice();}
+  function assemble(p,order){var o=(order&&order.length)?order:DEF_ORDER;return o.map(function(n){return p[n];}).filter(Boolean).join("\n\n");}
+  function buildMeta(ctx){return {score:ctx.score,genre:ctx.genre,time:ctx.time,budget:ctx.budget,visit:ctx.visit,voice:ctx.v.style,dialect:ctx.v.dialect};}
+
+  /* ======== render ======== */
+  var curState=null;
+  var PART_LABEL={title:"タイトル",open:"冒頭",mood:"雰囲気",dish:"料理",pos:"良かった点",neg:"気になった点",close:"締め"};
+  function renderOutput(cur){
+    curState=cur;
+    var p=cur.parts, d=cur.meta, body=assemble(p,cur.order);
+    var meta=['<span><b>'+d.score.toFixed(1)+'</b> 点</span>','<span>'+esc(d.genre)+'</span>','<span>'+esc(d.time||"")+'</span>'];
+    if(d.visit)meta.push('<span>🗓 '+esc(d.visit)+'</span>');
+    if(d.budget)meta.push('<span>'+esc(d.budget)+'</span>');
+    if(d.voice)meta.push('<span>🖋 '+esc(d.voice)+(d.dialect&&d.dialect!=="標準語"?"・"+esc(d.dialect):"")+'</span>');
+    var order=["title","open","mood","dish","pos","neg","close"];
+    var rr=order.filter(function(n){return n==="title"||n==="open"||n==="close"||p[n];})
+      .map(function(n){return '<button class="rr" data-part="'+n+'" type="button">🔄 '+PART_LABEL[n]+'</button>';}).join("");
+    $("output").innerHTML=
+      '<div class="card out-card" style="margin-top:16px;margin-bottom:0">'+
+        '<div class="out-title">'+esc(p.title)+'</div>'+
+        '<div class="out-body">'+esc(body)+'</div>'+
+        '<div class="out-meta">'+meta.join("")+'</div>'+
+        '<div class="reroll-label">部分ごとに作り直す</div>'+
+        '<div class="rerolls">'+rr+'</div>'+
+        '<div class="out-actions">'+
+          '<button class="btn btn-primary" id="copyBtn" type="button">📋 全文コピー</button>'+
+          '<button class="btn btn-ghost" id="allBtn" type="button">🔄 全部つくり直す</button>'+
+          '<button class="btn btn-ghost" id="saveBtn" type="button">💾 保存</button>'+
+        '</div>'+
+      '</div>';
+    Array.prototype.slice.call($("output").querySelectorAll(".rr")).forEach(function(b){
+      b.addEventListener("click",function(){
+        var name=b.getAttribute("data-part");var ctx=ctxFlags(buildCtx());
+        curState.parts[name]=partFn[name](ctx);curState.meta=buildMeta(ctx);
+        renderOutput(curState);toast(PART_LABEL[name]+"を作り直しました");
+      });
+    });
+    $("copyBtn").addEventListener("click",function(){copyText(p.title+"\n\n"+assemble(p,cur.order));});
+    $("allBtn").addEventListener("click",function(){var ctx=ctxFlags(buildCtx());renderOutput({parts:genAll(ctx),meta:buildMeta(ctx),order:partOrder()});});
+    $("saveBtn").addEventListener("click",function(){saveRecord(p.title,assemble(p,cur.order),d);});
+  }
+  function renderStatic(title,body,d){
+    var meta=['<span><b>'+d.score.toFixed(1)+'</b> 点</span>','<span>'+esc(d.genre)+'</span>'];
+    if(d.visit)meta.push('<span>🗓 '+esc(d.visit)+'</span>');
+    $("output").innerHTML=
+      '<div class="card out-card" style="margin-top:16px;margin-bottom:0">'+
+        '<div class="out-title">'+esc(title)+'</div>'+
+        '<div class="out-body">'+esc(body)+'</div>'+
+        '<div class="out-meta">'+meta.join("")+'</div>'+
+        '<div class="out-actions"><button class="btn btn-primary" id="copyBtn2" type="button">📋 全文コピー</button></div>'+
+      '</div>';
+    $("copyBtn2").addEventListener("click",function(){copyText(title+"\n\n"+body);});
+  }
+  $("genBtn").addEventListener("click",function(){var ctx=ctxFlags(buildCtx());renderOutput({parts:genAll(ctx),meta:buildMeta(ctx),order:partOrder()});});
+
+  /* ---------- clipboard ---------- */
+  function copyText(text){
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){toast("コピーしました。食べログに貼り付けてください");},fb);}else fb();
+    function fb(){var ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("コピーしました");}catch(e){toast("コピーできませんでした");}document.body.removeChild(ta);}
+  }
+  var tTimer;function toast(m){var t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(tTimer);tTimer=setTimeout(function(){t.classList.remove("show");},2200);}
+
+  /* ---------- storage ---------- */
+  var KEY="satto_shokurepo_v1";
+  function load(){
+    var a;try{a=JSON.parse(localStorage.getItem(KEY)||"[]");}catch(e){a=[];}
+    return a.map(function(r){if(!r.savedAt)r.savedAt=new Date(r.id||Date.now()).toISOString();if(r.visit==null)r.visit="";return r;});
+  }
+  function store(a){try{localStorage.setItem(KEY,JSON.stringify(a));}catch(e){}}
+  function saveRecord(title,body,d){
+    var a=load();
+    a.unshift({id:Date.now(),schema:SCHEMA,savedAt:new Date().toISOString(),visit:(d&&d.visit)||$("visit").value.trim(),
+      title:title,body:body,shop:$("shop").value.trim(),score:d?d.score:parseFloat($("score").value),genre:d?d.genre:$("genre").value,area:$("area").value.trim()});
+    store(a);renderSaved();toast("保存しました");
+  }
+  function fmtDate(iso){var t=new Date(iso);if(isNaN(t))return"";return t.getFullYear()+"/"+z2(t.getMonth()+1)+"/"+z2(t.getDate())+" "+z2(t.getHours())+":"+z2(t.getMinutes());}
+  $("savedSearch").addEventListener("input",function(){renderSaved();});
+  function renderSaved(){
+    var a=load(),box=$("savedList"),q=$("savedSearch").value.trim();
+    if(q)a=a.filter(function(r){return (r.shop+r.title+r.genre+(r.area||"")+r.body).indexOf(q)>=0;});
+    if(!a.length){box.innerHTML='<div class="empty"><span class="big">🍶</span>'+(q?"該当する下書きはありません。":"まだ保存された下書きはありません。<br>記録して「保存」を押すとここに並びます。")+'</div>';return;}
+    box.innerHTML="";
+    a.forEach(function(r){
+      var el=document.createElement("div");el.className="saved-item";
+      el.innerHTML='<div class="saved-thumb">'+({'カフェ':'☕','居酒屋':'🍶','ラーメン':'🍜','寿司':'🍣','焼肉':'🥩','スイーツ':'🍰'}[r.genre]||'🍽')+'</div>'+
+        '<div class="saved-main"><div class="saved-name">'+esc(r.shop||"（店名なし）")+'</div>'+
+        '<div class="saved-sub">'+(r.score!=null?r.score.toFixed(1)+'点・':'')+esc(r.genre||"")+(r.area?'・'+esc(r.area):'')+'</div>'+
+        '<div class="saved-when">'+(r.visit?'🗓 '+esc(r.visit)+'　':'')+'💾 '+esc(fmtDate(r.savedAt))+'</div></div>'+
+        '<div class="saved-btns"></div>';
+      var main=el.querySelector(".saved-main"),btns=el.querySelector(".saved-btns");
+      main.addEventListener("click",function(){
+        renderStatic(r.title,r.body,{score:r.score!=null?r.score:0,genre:r.genre,visit:r.visit});
+        window.scrollTo({top:$("output").offsetTop-80,behavior:"smooth"});toast("読み込みました");
+      });
+      function normal(){
+        btns.innerHTML='<button class="saved-btn copy" type="button" title="コピー">📋</button><button class="saved-btn del" type="button" title="削除">🗑</button>';
+        btns.querySelector(".copy").addEventListener("click",function(){copyText(r.title+"\n\n"+r.body);});
+        btns.querySelector(".del").addEventListener("click",function(){
+          btns.innerHTML='<span class="confirm-q">削除しますか？</span><button class="saved-btn yes" type="button">はい</button><button class="saved-btn no" type="button">やめる</button>';
+          btns.querySelector(".yes").addEventListener("click",function(){store(load().filter(function(x){return x.id!==r.id;}));renderSaved();toast("削除しました");});
+          btns.querySelector(".no").addEventListener("click",normal);
+        });
+      }
+      normal();
+      box.appendChild(el);
+    });
+  }
+  renderSaved();
+
+  /* ---------- 辞書管理UI（GUI） ---------- */
+  $("dictHead").addEventListener("click",function(){
+    var b=$("dictBody");
+    if(b.hasAttribute("hidden")){b.removeAttribute("hidden");$("dictCaret").textContent="△";renderDictUI();}
+    else{b.setAttribute("hidden","");$("dictCaret").textContent="▽";}
+  });
+  // ジャンル・タグの選択肢を用意
+  (function(){
+    var g=$("gxGenre"),pv=$("pvGenre");GENRE_LIST.forEach(function(x){var o=document.createElement("option");o.textContent=x;g.appendChild(o);var o2=document.createElement("option");o2.textContent=x;pv.appendChild(o2);});
+    var t=$("tcTag");TONE.forEach(function(x){var o=document.createElement("option");o.textContent=x;t.appendChild(o);});
+    $("mergeOverride").checked=(customState.mergeMode==="override");
+  })();
+  function buildSampleCtx(genre,dstr){
+    var v=buildVoice();setActiveGenre(genre);
+    var ctx={v:v,reg:v.soft?"soft":"casual",shop:"サンプル亭",area:"",genre:genre,time:"夜",
+      dishes:splitKW(dstr),forced:[],dishMeta:{},scene:[],tone:[],mood:["落ち着く"],
+      score:4.5,budget:"",pos:[],neg:[],visit:"",sceneryOn:false,length:1,season:seasonOf(currentMonth())};
+    return ctxFlags(ctx);
+  }
+  function renderPreview(){
+    var pv=$("pvOut");if(!pv)return;
+    var ctx=buildSampleCtx($("pvGenre").value,$("pvDishes").value||"サバの味噌煮、ハイボール");
+    var parts=genAll(ctx);pv.textContent=assemble(parts);
+    setActiveGenre($("genre").value); // 本編の状態に戻す
+  }
+  $("pvGenre").addEventListener("change",renderPreview);
+  $("pvDishes").addEventListener("input",renderPreview);
+  $("mergeOverride").addEventListener("change",function(){setMergeMode($("mergeOverride").checked?"override":"combine");renderDictUI();updateVer();toast("統合ルールを変更しました");});
+  function updateVer(){$("dictVer").textContent=LEX_VER;$("verBadge").textContent="v"+APP_VER+" ・ 辞書 "+LEX_VER;}
+  function renderDictUI(){
+    // 食材リスト
+    var il=$("igList");il.innerHTML="";
+    if(!customState.entries.ingred.length)il.innerHTML='<div class="empty-sm">まだ追加した食材はありません。</div>';
+    customState.entries.ingred.forEach(function(e,i){
+      var row=document.createElement("div");row.className="dict-row";
+      row.innerHTML='<span class="g"><b>'+esc(e[0])+'</b> <span class="sub">'+esc((e[1]||[]).join(" / "))+'</span></span><button class="x" type="button" title="削除">🗑</button>';
+      row.querySelector(".x").addEventListener("click",function(){removeIngredEntry(i);renderDictUI();updateVer();toast("削除しました");});
+      il.appendChild(row);
+    });
+    // ジャンル語リスト
+    var gl=$("gxList");gl.innerHTML="";var gm=customState.entries.genrex,any=false;
+    Object.keys(gm).forEach(function(g){(gm[g]||[]).forEach(function(p,i){any=true;
+      var row=document.createElement("div");row.className="dict-row";
+      row.innerHTML='<span class="g"><b>'+esc(g)+'</b> <span class="sub">'+esc(p)+'</span></span><button class="x" type="button" title="削除">🗑</button>';
+      row.querySelector(".x").addEventListener("click",function(){removeGenrexEntry(g,i);renderDictUI();updateVer();toast("削除しました");});
+      gl.appendChild(row);
+    });});
+    if(!any)gl.innerHTML='<div class="empty-sm">まだ追加したジャンルの一言はありません。</div>';
+    // カテゴリー（優先度順・▲▼で調整）
+    var cl=$("catList");cl.innerHTML="";
+    var cats=customState.entries.cats||[];
+    if(!cats.length)cl.innerHTML='<div class="empty-sm">追加した独自カテゴリーはありません。</div>';
+    cats.forEach(function(c,i){
+      var row=document.createElement("div");row.className="dict-row";
+      row.innerHTML='<span class="sub" style="flex:none;width:16px">'+(i+1)+'</span>'+
+        '<span class="g"><b>'+esc(c.label||c.id)+'</b> <span class="sub">'+esc(c.pattern)+'</span></span>'+
+        '<button class="x mvup" type="button" title="優先度を上げる">▲</button><button class="x mvdn" type="button" title="優先度を下げる">▼</button><button class="x del" type="button" title="削除">🗑</button>';
+      row.querySelector(".mvup").addEventListener("click",function(){moveCat(i,-1);renderDictUI();updateVer();});
+      row.querySelector(".mvdn").addEventListener("click",function(){moveCat(i,1);renderDictUI();updateVer();});
+      row.querySelector(".del").addEventListener("click",function(){removeCatEntry(i);renderDictUI();updateVer();toast("削除しました");});
+      cl.appendChild(row);
+    });
+    // プリセット
+    var pl=$("presetList");pl.innerHTML="";
+    PRESETS.forEach(function(p){
+      var on=customState.presets.indexOf(p.id)>=0;
+      var row=document.createElement("div");row.className="preset-row";
+      row.innerHTML='<div class="p-main"><div class="p-name">'+esc(p.name)+'</div><div class="p-desc">'+esc(p.desc)+'</div></div>'+
+        '<button type="button" class="p-btn'+(on?" on":"")+'">'+(on?"適用中":"追加")+'</button>';
+      row.querySelector(".p-btn").addEventListener("click",function(){togglePreset(p.id);renderDictUI();updateVer();toast(on?"解除しました":"適用しました");});
+      pl.appendChild(row);
+    });
+    // ライブラリ
+    var kl=$("packList");kl.innerHTML="";
+    var mp=customState.myPacks||[];
+    if(!mp.length)kl.innerHTML='<div class="empty-sm">保存したパックはありません。</div>';
+    mp.forEach(function(p){
+      var wrap=document.createElement("div");
+      var gsum=(p.genres&&p.genres.length)?("対象："+p.genres.join("・")):"全ジャンル";
+      var row=document.createElement("div");row.className="preset-row";
+      row.innerHTML='<button class="x mvup" type="button" title="上へ" style="flex:none">▲</button><button class="x mvdn" type="button" title="下へ" style="flex:none">▼</button>'+
+        '<div class="p-main"><div class="p-name">'+esc(p.name)+'</div><div class="p-desc">食材'+((p.dict.ingred||[]).length)+'・カテゴリー'+((p.dict.cats||[]).length)+' ／ '+esc(gsum)+'</div></div>'+
+        '<button type="button" class="p-btn'+(p.enabled?" on":"")+'">'+(p.enabled?"ON":"OFF")+'</button>'+
+        '<button class="x pgen" type="button" title="対象ジャンル">🎯</button><button class="x pexp" type="button" title="書き出す">📤</button><button class="x pren" type="button" title="名前変更">✎</button><button class="x pdel" type="button" title="削除">🗑</button>';
+      var gbox=document.createElement("div");gbox.className="chips";gbox.style.marginTop="6px";gbox.hidden=true;
+      GENRE_LIST.forEach(function(gn){
+        var b=document.createElement("button");b.type="button";b.className="chip";b.textContent=gn;
+        b.setAttribute("aria-pressed",(p.genres&&p.genres.indexOf(gn)>=0)?"true":"false");
+        b.addEventListener("click",function(){
+          var gs=(p.genres||[]).slice();var i=gs.indexOf(gn);if(i>=0)gs.splice(i,1);else gs.push(gn);
+          setPackGenres(p.id,gs);renderDictUI();updateVer();
+        });
+        gbox.appendChild(b);
+      });
+      row.querySelector(".mvup").addEventListener("click",function(){movePack(p.id,-1);renderDictUI();updateVer();});
+      row.querySelector(".mvdn").addEventListener("click",function(){movePack(p.id,1);renderDictUI();updateVer();});
+      row.querySelector(".p-btn").addEventListener("click",function(){togglePackEnabled(p.id);renderDictUI();updateVer();});
+      row.querySelector(".pgen").addEventListener("click",function(){gbox.hidden=!gbox.hidden;});
+      row.querySelector(".pexp").addEventListener("click",function(){var j=buildPackJSON(p);$("expOut").value=j;copyText(j);toast("書き出してコピーしました");});
+      row.querySelector(".pren").addEventListener("click",function(){
+        var main=row.querySelector(".p-main");
+        main.innerHTML='<input type="text" class="rn" value="'+esc(p.name)+'" style="font-size:13px"> <button class="p-btn rnok" type="button">保存</button>';
+        var inp=main.querySelector(".rn");inp.focus();
+        main.querySelector(".rnok").addEventListener("click",function(){renamePack(p.id,inp.value.trim()||p.name);renderDictUI();updateVer();toast("名前を変更しました");});
+      });
+      row.querySelector(".pdel").addEventListener("click",function(){
+        row.querySelector(".pdel").outerHTML='<span class="confirm-q">削除？</span><button class="saved-btn yes" type="button">はい</button><button class="saved-btn no" type="button">やめる</button>';
+        row.querySelector(".yes").addEventListener("click",function(){deletePack(p.id);renderDictUI();updateVer();toast("削除しました");});
+        row.querySelector(".no").addEventListener("click",function(){renderDictUI();});
+      });
+      wrap.appendChild(row);wrap.appendChild(gbox);kl.appendChild(wrap);
+    });
+    // 重複レポート
+    var dup=dupIngredReport(activeGenre);
+    var dr=$("dupReport");
+    if(dup.length){dr.style.color="var(--neg)";dr.textContent="⚠ 有効パックで重複している食材："+dup.join("／")+"（統合ルールで扱いが変わります）";}
+    else{dr.style.color="var(--muted)";dr.textContent="有効パック間で重複している食材はありません。";}
+    $("mergeOverride").checked=(customState.mergeMode==="override");
+    // 相性
+    renderTcCats();
+    renderStats();
+    renderPreview();
+    updateVer();
+  }
+  function renderStats(){
+    var t=statsTotals(),g=$("statTotals");if(!g)return;
+    g.innerHTML=
+      '<div class="stat"><div class="n">'+t.totalIng+'</div><div class="l">食材パターン<br>（基本'+t.baseIng+'＋追加'+(t.custIng+t.packIng+t.presetIng)+'）</div></div>'+
+      '<div class="stat"><div class="n">'+(t.baseCats+t.custCats)+'</div><div class="l">カテゴリー<br>（基本'+t.baseCats+'＋独自'+t.custCats+'）</div></div>'+
+      '<div class="stat"><div class="n">'+t.enabledPacks+'</div><div class="l">有効パック<br>（プリセット'+t.presetsOn+'）</div></div>';
+    var cov=statsCoverage(),c=$("statCov");c.innerHTML="";
+    cov.forEach(function(r){
+      var row=document.createElement("div");row.className="cov-row";
+      row.innerHTML='<span class="cg">'+esc(r.genre)+'</span><span class="cbar"><span class="cfill" style="width:'+r.pct+'%"></span></span><span class="cp">'+r.pct+'%</span>';
+      c.appendChild(row);
+    });
+  }
+  $("valBtn").addEventListener("click",function(){
+    var iss=validateAll(),o=$("valOut");o.innerHTML="";
+    if(!iss.length){o.innerHTML='<div class="empty-sm val-ok">✓ 問題は見つかりませんでした。</div>';return;}
+    var errs=iss.filter(function(x){return x[0]==="error";}).length;
+    var head=document.createElement("div");head.className="empty-sm";head.innerHTML='エラー'+errs+'件・警告'+(iss.length-errs)+'件';o.appendChild(head);
+    iss.forEach(function(x){var d=document.createElement("div");d.className="dict-row "+(x[0]==="error"?"val-err":"val-warn");d.innerHTML='<span class="g">'+(x[0]==="error"?"⛔ ":"⚠ ")+esc(x[1])+'</span>';o.appendChild(d);});
+  });
+  $("bkExport").addEventListener("click",function(){$("bkCode").value=exportAllState();copyText($("bkCode").value);$("bkStatus").style.color="var(--pos)";$("bkStatus").textContent="コードを書き出してコピーしました。別の端末で貼り付けて復元できます。";});
+  $("bkImport").addEventListener("click",function(){
+    var code=$("bkCode").value.trim();if(!code){toast("コードを貼り付けてください");return;}
+    var r=importAllState(code);var st=$("bkStatus");
+    if(r.ok){
+      var w=(r.warn&&r.warn.length)?"（ただし"+r.warn.join("・")+"は端末に保存できませんでした。保存容量やブラウザの設定をご確認ください）":"";
+      st.style.color=w?"var(--neg)":"var(--pos)";st.textContent="復元しました。反映します…"+w;
+      renderSaved();loadPersona();updateBadge();renderDishRows();setTimeout(function(){renderDictUI();updateVer();},50);toast("復元しました");}
+    else{st.style.color="var(--neg)";st.textContent=r.msg;}
+  });
+  $("bkFile").addEventListener("change",function(e){
+    var f=(e.target.files||[])[0];if(!f)return;var r=new FileReader();
+    r.onload=function(){$("bkCode").value=r.result;toast("読み込みました。『復元』を押してください");};r.readAsText(f);e.target.value="";
+  });
+  if(window.claude&&claude.use){claude.use("downloads").then(function(d){if(d){window.__dl=d;$("bkFileBtn").hidden=false;}}).catch(function(){});}
+  $("bkFileBtn").addEventListener("click",function(){
+    if(!window.__dl){toast("この環境では保存できません");return;}
+    window.__dl.save({filename:"satto-backup.json",data:exportAllState()}).then(function(){toast("保存しました");},function(){toast("保存はキャンセルされました");});
+  });
+  function renderTcCats(){
+    var tag=$("tcTag").value, box=$("tcCats");box.innerHTML="";
+    var cur=(TONE_CAT[tag]||[]).slice();
+    CATS.forEach(function(c){
+      var on=cur.indexOf(c)>=0;
+      var b=document.createElement("button");b.type="button";b.className="chip tone";b.textContent=CAT_LABEL[c]||c;
+      b.setAttribute("aria-pressed",on?"true":"false");
+      b.addEventListener("click",function(){
+        var arr=(TONE_CAT[tag]||[]).slice();var i=arr.indexOf(c);
+        if(i>=0)arr.splice(i,1);else arr.push(c);
+        if(arr.indexOf("food")<0)arr.push("food"); // foodは常に許可（汎用料理で使えるように）
+        setToneCatEntry(tag,arr);renderTcCats();updateVer();
+      });
+      box.appendChild(b);
+    });
+  }
+  $("tcTag").addEventListener("change",renderTcCats);
+  function doAddIngred(pat,exp){addIngredEntry(pat,exp);$("igPat").value="";$("igExp").value="";$("igWarn").innerHTML="";renderDictUI();updateVer();toast("食材を追加しました");}
+  $("igAdd").addEventListener("click",function(){
+    var pat=$("igPat").value.trim();var exp=$("igExp").value.split("\n").map(function(s){return s.trim();}).filter(Boolean);
+    if(!pat||!exp.length){toast("食材名と表現を入力してください");return;}
+    var rerr=safeRegex(pat);if(rerr){$("igWarn").innerHTML="⚠ 食材名が不正です："+esc(rerr);return;}
+    var conf=ingredConflicts(pat);
+    if(conf.length){
+      var w=$("igWarn");
+      w.innerHTML="⚠ "+conf.map(esc).join("／")+' <button class="p-btn" id="igForce" type="button" style="margin-left:6px">承知で追加</button> <button class="p-btn" id="igCancel" type="button">やめる</button>';
+      $("igForce").addEventListener("click",function(){doAddIngred(pat,exp);});
+      $("igCancel").addEventListener("click",function(){w.innerHTML="";});
+      return;
+    }
+    doAddIngred(pat,exp);
+  });
+  $("catAdd").addEventListener("click",function(){
+    var id=$("catId").value.trim(),label=$("catLabel").value.trim(),pat=$("catPat").value.trim();
+    var desc=$("catDescIn").value.split("\n").map(function(s){return s.trim();}).filter(Boolean);
+    if(!/^[A-Za-z0-9_]+$/.test(id)){toast("IDは英数字で入力してください");return;}
+    if(!pat||!desc.length){toast("判定キーワードと表現を入力してください");return;}
+    if(CATS.indexOf(id)>=0){toast("そのIDは既に使われています");return;}
+    var err=safeRegex(pat);if(err){toast("キーワードが不正です："+err);return;}
+    addCatEntry({id:id,label:label||id,pattern:pat,desc:desc});
+    $("catId").value="";$("catLabel").value="";$("catPat").value="";$("catDescIn").value="";
+    renderDictUI();updateVer();toast("カテゴリーを追加しました");
+  });
+  $("savePackBtn").addEventListener("click",function(){
+    if(isEntriesEmpty()){toast("保存できる追加がありません");return;}
+    savePackFromEntries($("savePackName").value.trim());$("savePackName").value="";
+    renderDictUI();updateVer();toast("パックとして保存しました");
+  });
+  $("expBtn").addEventListener("click",function(){$("expOut").value=buildPresetJSON($("expName").value.trim());toast("書き出しました");});
+  $("expCopy").addEventListener("click",function(){var v=$("expOut").value;if(!v){toast("先に『書き出す』を押してください");return;}copyText(v);});
+  $("gxAdd").addEventListener("click",function(){
+    var p=$("gxPhrase").value.trim();if(!p){toast("一言を入力してください");return;}
+    addGenrexEntry($("gxGenre").value,p);$("gxPhrase").value="";renderDictUI();updateVer();toast("追加しました");
+  });
+  $("dictFile").addEventListener("change",function(e){
+    var f=(e.target.files||[])[0];if(!f)return;
+    var r=new FileReader();r.onload=function(){$("dictText").value=r.result;toast("読み込みました。『取り込む』を押してください");};
+    r.onerror=function(){toast("ファイルを読めませんでした");};r.readAsText(f);e.target.value="";
+  });
+  $("dictApply").addEventListener("click",function(){
+    var txt=$("dictText").value.trim();if(!txt){toast("JSONが空です");return;}
+    var o;try{o=JSON.parse(txt);}catch(err){$("dictStatus").style.color="var(--neg)";$("dictStatus").textContent="JSONの形式が正しくありません";return;}
+    var r=importDict(o);var st=$("dictStatus");
+    if(r.name){
+      $("dictText").value="";renderDictUI();updateVer();
+      var lines=[];
+      if(r.errors&&r.errors.length)lines.push("安全のため除外 "+r.errors.length+"件："+r.errors.join("／"));
+      if(r.warns&&r.warns.length)lines.push("注意："+r.warns.join("／"));
+      st.style.color=lines.length?"var(--neg)":"var(--pos)";
+      st.textContent="「"+r.name+"」を取り込みました。"+(lines.join(" ")||"問題は見つかりませんでした。");
+      toast("取り込みました");
+    }else{
+      st.style.color="var(--neg)";st.textContent="取り込めませんでした："+((r.errors&&r.errors.join("／"))||"内容がありません");
+    }
+  });
+  $("dictTpl").addEventListener("click",function(){$("dictText").value=DICT_TEMPLATE;toast("テンプレを表示しました");});
+  $("dictReset").addEventListener("click",function(){resetDict();renderDictUI();updateVer();toast("辞書を初期化しました");});
+  updateVer();
+})();
+</script>
