@@ -191,7 +191,7 @@
   <header class="app">
     <h1 class="brand">サッと食レポ<span class="dot">.</span></h1>
     <p class="tagline">その場で30秒メモ → 食べログ用の文章に。<br>文をつなげて、なめらかで自然な口コミに。</p>
-    <span class="ver" id="verBadge">v3.9.1 ・ 辞書 2026.11</span>
+    <span class="ver" id="verBadge">v3.9.2 ・ 辞書 2026.11</span>
   </header>
 
   <!-- PERSONA -->
@@ -240,6 +240,10 @@
         <label class="switch"><input type="checkbox" id="pScenery" checked><span class="slider"></span></label>
         季節・時間帯の情景描写を入れる（控えめ）
       </div>
+      <div class="toggle-row">
+        <label class="switch"><input type="checkbox" id="pGeo" checked><span class="slider"></span></label>
+        写真の位置情報から住所を表示（座標をOpenStreetMapに送信して住所へ変換）
+      </div>
     </div>
   </section>
 
@@ -250,10 +254,12 @@
       <input type="text" id="storeSearch" placeholder="お店の名前を入力（過去に保存したお店が候補に出ます）" autocomplete="off">
       <div id="storeSug"></div>
       <p class="hint">以前保存したお店やサンプルが候補に出ます（🕘は過去に訪れたお店）。選ぶと店名・エリア・ジャンルを自動入力。新しいお店は下の「店名」欄に直接入力してください。</p></label>
-    <label class="field"><span class="field-name">📷 写真（撮影日から訪問時期を自動取得）</span>
+    <label class="field"><span class="field-name">📷 写真（撮影日時・位置情報を自動取得）</span>
       <div class="photo-grid" id="photoGrid">
         <label class="photo-add">＋<input type="file" id="photoInput" accept="image/*" multiple></label>
-      </div></label>
+      </div>
+      <div id="geoOut" class="note" hidden style="margin-top:10px"></div>
+      <p class="hint">写真に位置情報があれば撮影場所の住所を表示します（お店の検索の手がかりに）。日時・時刻から訪問時期や状況も自動入力します。位置情報の利用は人物設定でON/OFFできます。</p></label>
     <div class="row">
       <label class="field"><span class="field-name">店名</span><input type="text" id="shop" placeholder="例）大衆酒場 とり松"></label>
       <label class="field"><span class="field-name">エリア・場所</span><input type="text" id="area" placeholder="例）新橋"></label>
@@ -460,7 +466,7 @@
 <script>
 (function(){
   "use strict";
-  var APP_VER="3.9.1", LEX_VER="2026.11", SCHEMA=3;
+  var APP_VER="3.9.2", LEX_VER="2026.11", SCHEMA=3;
   var $=function(id){return document.getElementById(id);};
   function rand(a){return a[Math.floor(Math.random()*a.length)];}
   function chance(p){return Math.random()<p;}
@@ -591,17 +597,99 @@
 
   /* ---------- photos + EXIF ---------- */
   var photos=[], photoDate=null;
+  /* ---------- EXIF GPS 抽出（依存ゼロの自前パーサ・JPEG対応） ---------- */
+  function parseExifGPS(buf){
+    try{
+      var dv=new DataView(buf);
+      if(dv.getUint16(0)!==0xFFD8)return null; // JPEGのみ（HEIC/PNG等は非対応）
+      var off=2,len=dv.byteLength;
+      while(off+4<=len){
+        if(dv.getUint8(off)!==0xFF)break;
+        var marker=dv.getUint8(off+1),size=dv.getUint16(off+2);
+        if(marker===0xE1&&dv.getUint32(off+4)===0x45786966)return readTiffGPS(dv,off+10); // "Exif"
+        if(marker===0xDA)break;
+        off+=2+size;
+      }
+    }catch(e){}
+    return null;
+  }
+  function readTiffGPS(dv,tiff){
+    var bo=dv.getUint16(tiff),le;
+    if(bo===0x4949)le=true;else if(bo===0x4D4D)le=false;else return null;
+    function u16(o){return dv.getUint16(o,le);}function u32(o){return dv.getUint32(o,le);}
+    var ifd0=tiff+u32(tiff+4),n=u16(ifd0),gps=0;
+    for(var i=0;i<n;i++){var e=ifd0+2+i*12;if(u16(e)===0x8825){gps=tiff+u32(e+8);break;}}
+    if(!gps)return null;
+    var gn=u16(gps),latRef="",lonRef="",lat=null,lon=null;
+    function rats(entry){var o=tiff+u32(entry+8),cnt=u32(entry+4),a=[];for(var k=0;k<cnt;k++){var num=u32(o+k*8),den=u32(o+k*8+4);a.push(den?num/den:0);}return a;}
+    for(var j=0;j<gn;j++){var g=gps+2+j*12,tag=u16(g);
+      if(tag===0x0001)latRef=String.fromCharCode(dv.getUint8(g+8));
+      else if(tag===0x0003)lonRef=String.fromCharCode(dv.getUint8(g+8));
+      else if(tag===0x0002)lat=rats(g);
+      else if(tag===0x0004)lon=rats(g);
+    }
+    if(!lat||!lon)return null;
+    function dms(a){return (a[0]||0)+(a[1]||0)/60+(a[2]||0)/3600;}
+    var la=dms(lat),lo=dms(lon);
+    if(latRef==="S")la=-la;if(lonRef==="W")lo=-lo;
+    if(!isFinite(la)||!isFinite(lo)||(la===0&&lo===0))return null;
+    return {lat:la,lon:lo};
+  }
+  /* 座標 → 住所（OpenStreetMap Nominatim。無料・キー不要。座標を送信する点に留意） */
+  function reverseGeocode(lat,lon,cb){
+    if(typeof fetch!=="function"){cb(null);return;}
+    var url="https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&addressdetails=1&accept-language=ja&lat="+lat+"&lon="+lon;
+    fetch(url,{headers:{"Accept":"application/json"}}).then(function(r){return r.ok?r.json():null;}).then(function(j){
+      if(!j){cb(null);return;}
+      var a=j.address||{};
+      var parts=String(j.display_name||"").split(",").map(function(s){return s.trim();})
+        .filter(function(p){return p&&p!=="日本"&&!/^\d{3}-?\d{0,4}$/.test(p);});
+      parts.reverse(); // 大→小の順に並べ替え
+      var text=parts.join(" ")||(j.display_name||"");
+      var area=a.quarter||a.suburb||a.neighbourhood||a.city_district||a.ward||a.city||a.town||a.village||"";
+      cb({text:text,area:area});
+    }).catch(function(){cb(null);});
+  }
+  var MUTED='style="color:var(--muted);font-size:11.5px"';
+  function showGeoFromPhoto(gps){
+    var box=$("geoOut");if(!box)return;
+    var coord=gps.lat.toFixed(5)+", "+gps.lon.toFixed(5);
+    var mapUrl="https://www.openstreetmap.org/?mlat="+gps.lat+"&mlon="+gps.lon+"#map=18/"+gps.lat+"/"+gps.lon;
+    var mapLink='<a href="'+mapUrl+'" target="_blank" rel="noopener">地図で開く</a>';
+    box.hidden=false;
+    if($("pGeo")&&!$("pGeo").checked){ // 住所変換オフ：座標だけ表示（外部送信なし）
+      box.innerHTML='📍 <b>撮影場所の座標</b>：'+esc(coord)+' ／ '+mapLink+'<br><span '+MUTED+'>住所への変換はオフです（人物設定で切替）。</span>';
+      return;
+    }
+    box.innerHTML='📍 撮影場所を特定中…（'+esc(coord)+'）';
+    reverseGeocode(gps.lat,gps.lon,function(a){
+      if(a&&a.text){
+        box.innerHTML='📍 <b>撮影場所（写真の位置情報）</b><br>'+esc(a.text)+
+          '<br><span '+MUTED+'>'+esc(coord)+' ／ '+mapLink+'</span>'+
+          '<br><span '+MUTED+'>この住所を手がかりにお店を検索してください。</span>';
+        if(a.area&&!$("area").value.trim())$("area").value=a.area; // エリア欄が空なら補完（文章にも反映）
+      }else{
+        box.innerHTML='📍 <b>撮影場所の座標</b>：'+esc(coord)+' ／ '+mapLink+'<br><span '+MUTED+'>住所は取得できませんでした（通信環境をご確認ください）。</span>';
+      }
+    });
+  }
+  function showNoGeo(){
+    var box=$("geoOut");if(!box)return;box.hidden=false;
+    box.innerHTML='<span '+MUTED+'>この写真には位置情報が含まれていません（撮影時に位置情報オフ／スクショ／HEIC等）。エリアは手入力してください。</span>';
+  }
   function readExifDate(file,cb){
     try{
       var r=new FileReader();
       r.onload=function(){
+        var out=null,gps=null,buf=r.result;
         try{
-          var b=new Uint8Array(r.result),n=b.length,s="",CH=8192;
+          var b=new Uint8Array(buf),n=b.length,s="",CH=8192;
           for(var i=0;i<n;i+=CH){s+=String.fromCharCode.apply(null,b.subarray(i,Math.min(i+CH,n)));}
           var m=s.match(/(\d{4}):([01]\d):([0-3]\d) ([0-2]\d):([0-5]\d):([0-5]\d)/);
-          if(m){cb({y:+m[1],mo:+m[2],d:+m[3],h:+m[4],mi:+m[5]});return;}
+          if(m)out={y:+m[1],mo:+m[2],d:+m[3],h:+m[4],mi:+m[5]};
         }catch(e){}
-        cb(null);
+        try{gps=parseExifGPS(buf);}catch(e){}
+        if(out||gps){out=out||{};out.gps=gps;cb(out);}else cb(null);
       };
       r.onerror=function(){cb(null);};
       r.readAsArrayBuffer(file.slice(0,300000));
@@ -613,12 +701,14 @@
     renderPhotos();
     if(!photoDate&&files[0]){
       readExifDate(files[0],function(d){
-        if(d){
+        if(!d)return;
+        if(d.y){ // 日時が取れたときだけ日付系を反映
           photoDate=d;
           if(!$("visit").value.trim()){var _ymd=d.y+"年"+d.mo+"月"+d.d+"日";$("visit").value=_ymd;toast("写真から訪問時期を取得："+_ymd+"（修正可）");}
           if(d.h!=null)$("time").value=(d.h>=16||d.h<5)?"夜":"昼"; // 撮影時刻から時間帯を自動
           autoSituFromDate(d);                                    // 曜日・時刻から訪問シーンを推測
         }
+        if(d.gps)showGeoFromPhoto(d.gps); else showNoGeo();        // 位置情報→住所（お店検索の手がかり）
       });
     }
     e.target.value="";
@@ -653,8 +743,8 @@
   /* ---------- persona ---------- */
   var PKEY="satto_persona_v1";
   var pIds=["pGender","pAge","pJob","pDialect","pChar","pStrength","pLength"];
-  function loadPersona(){try{var o=JSON.parse(localStorage.getItem(PKEY)||"{}");pIds.forEach(function(id){if(o[id]!=null&&$(id))$(id).value=o[id];});if(o.pScenery!=null)$("pScenery").checked=!!o.pScenery;}catch(e){}}
-  function savePersona(){var o={};pIds.forEach(function(id){o[id]=$(id).value;});o.pScenery=$("pScenery").checked;try{localStorage.setItem(PKEY,JSON.stringify(o));}catch(e){}updateBadge();}
+  function loadPersona(){try{var o=JSON.parse(localStorage.getItem(PKEY)||"{}");pIds.forEach(function(id){if(o[id]!=null&&$(id))$(id).value=o[id];});if(o.pScenery!=null)$("pScenery").checked=!!o.pScenery;if(o.pGeo!=null&&$("pGeo"))$("pGeo").checked=!!o.pGeo;}catch(e){}}
+  function savePersona(){var o={};pIds.forEach(function(id){o[id]=$(id).value;});o.pScenery=$("pScenery").checked;if($("pGeo"))o.pGeo=$("pGeo").checked;try{localStorage.setItem(PKEY,JSON.stringify(o));}catch(e){}updateBadge();}
   function updateBadge(){
     var bits=[];if($("pChar").value)bits.push($("pChar").value);
     if($("pDialect").value&&$("pDialect").value!=="標準語")bits.push($("pDialect").value);
@@ -663,7 +753,7 @@
     $("pStrVal").textContent=["弱","中","強"][parseInt($("pStrength").value,10)]||"中";
     $("pLenVal").textContent=["短め","標準","長め"][parseInt($("pLength").value,10)]||"標準";
   }
-  pIds.concat(["pScenery"]).forEach(function(id){$(id).addEventListener("change",savePersona);$(id).addEventListener("input",savePersona);});
+  pIds.concat(["pScenery","pGeo"]).forEach(function(id){if($(id)){$(id).addEventListener("change",savePersona);$(id).addEventListener("input",savePersona);}});
   $("personaHead").addEventListener("click",function(){
     var b=$("personaBody");
     if(b.hasAttribute("hidden")){b.removeAttribute("hidden");$("personaCaret").textContent="△";}
