@@ -266,7 +266,7 @@
 
   <!-- STEP 1 -->
   <section class="card">
-    <h2 class="step-label"><span class="step-num">1</span>その場でサッと記録<span class="spacer"></span><button class="theme-btn" id="resetBtn" type="button">🔄 入力をリセット</button></h2>
+    <h2 class="step-label"><span class="step-num">1</span>その場でサッと記録<span class="spacer"></span><button class="theme-btn" id="resetBtn" type="button">🔄 リセット</button></h2>
     <label class="field"><span class="field-name">📷 写真（撮影日時・位置情報を自動取得）</span>
       <div class="photo-grid" id="photoGrid">
         <label class="photo-add">＋<input type="file" id="photoInput" accept="image/*" multiple></label>
@@ -1910,11 +1910,11 @@
     var btn=$("resetBtn");if(!btn)return;
     btn.addEventListener("click",function(){
       if(!armed){ // 誤操作防止：1回目は確認状態にする
-        armed=true;btn.textContent="⚠ もう一度でリセット";
-        clearTimeout(timer);timer=setTimeout(function(){armed=false;btn.textContent="🔄 入力をリセット";},3000);
+        armed=true;btn.textContent="⚠ もう一度で消去";
+        clearTimeout(timer);timer=setTimeout(function(){armed=false;btn.textContent="🔄 リセット";},3000);
         return;
       }
-      clearTimeout(timer);armed=false;btn.textContent="🔄 入力をリセット";
+      clearTimeout(timer);armed=false;btn.textContent="🔄 リセット";
       resetEntry();toast("入力をリセットしました");
     });
   })();
