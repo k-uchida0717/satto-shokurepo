@@ -701,7 +701,7 @@
     renderPhotos();
     if(!photoDate&&files[0]){
       readExifDate(files[0],function(d){
-        if(!d)return;
+        d=d||{}; // メタ情報が全く無くても「位置情報なし」を表示できるように
         if(d.y){ // 日時が取れたときだけ日付系を反映
           photoDate=d;
           if(!$("visit").value.trim()){var _ymd=d.y+"年"+d.mo+"月"+d.d+"日";$("visit").value=_ymd;toast("写真から訪問時期を取得："+_ymd+"（修正可）");}
