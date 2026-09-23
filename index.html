@@ -225,16 +225,16 @@
     --grad-warm:linear-gradient(135deg,var(--accent) 0%,var(--gold) 100%);
     --grad-matcha:linear-gradient(135deg,var(--matcha),#5C8A30);
     --ring:rgba(226,76,59,.16);
-    /* イエベ（黄・ゴールド・黄土・オレンジ）ベースの下地 */
-    --paper:#FBEBCB;
+    /* イエベ（黄・ゴールド）ベースの下地 */
+    --paper:#FBE7B8;
   }
-  /* イエベ基調の、上品でオシャレなゴールド〜オレンジのメッシュ背景 */
+  /* イエベ基調：黄色を効かせつつ、淡く上品なゴールドのメッシュ背景 */
   body{
     background:
-      radial-gradient(1150px 520px at 106% -6%, rgba(245,182,72,.55), transparent 60%),   /* ゴールド（右上） */
-      radial-gradient(940px 520px at -14% 3%, rgba(233,150,58,.42), transparent 60%),      /* オレンジ（左上） */
-      radial-gradient(820px 640px at 50% 116%, rgba(196,142,58,.40), transparent 62%),      /* 黄土色（下） */
-      linear-gradient(180deg,#FDF3D8 0%, #FBE7BE 55%, #F6DCA8 100%);                        /* 黄〜ゴールドの基調 */
+      radial-gradient(1200px 540px at 106% -6%, rgba(249,196,74,.50), transparent 60%),    /* 濃いめゴールド（右上） */
+      radial-gradient(1000px 560px at -12% 2%, rgba(245,214,104,.42), transparent 60%),     /* 黄色（左上） */
+      radial-gradient(860px 660px at 50% 118%, rgba(214,170,72,.30), transparent 62%),       /* 淡い黄土（下・上品に） */
+      linear-gradient(180deg,#FCEFC0 0%, #F8E09E 52%, #F1CE80 100%);                          /* 黄〜ゴールドの基調（濃く） */
     background-attachment:fixed;
   }
   @media (prefers-color-scheme: dark){
@@ -296,6 +296,29 @@
   .hero-field{box-shadow:0 8px 24px -12px rgba(242,169,59,.4);}
   /* 入力フォーカスをアクセントリングで */
   input[type=text]:focus,textarea:focus,select:focus{outline-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft);}
+
+  /* ===== v3.11.2 概要＝黒×濃紺／ChatGPT＝黒×深緑（文字は明るく） ===== */
+  /* 概要（この投稿のメイン）：黒→濃紺グラデ＋金枠、文字は白〜明るいグレー */
+  .hero-field{
+    background:linear-gradient(150deg,#080B14 0%, #0F1E3C 48%, #16305E 100%);
+    border:2px solid var(--gold);
+    box-shadow:0 10px 28px -12px rgba(14,30,60,.7);}
+  .hero-field .field-name{color:#EAF1FF;}
+  .hero-field textarea{background:rgba(255,255,255,.06);border:1px solid rgba(242,169,59,.55);color:#F3F7FF;}
+  .hero-field textarea::placeholder{color:#9DB0D2;}
+  .hero-field textarea:focus{outline-color:var(--gold);box-shadow:0 0 0 4px rgba(242,169,59,.22);border-color:transparent;}
+  .hero-field .hint{color:#C4D0E8;background:transparent;}
+  .hero-field .hint b{color:#FFDFA0;}
+  /* ChatGPTのおすすめ：黒→深緑グラデ＋緑枠、文字は白〜明るいグレー */
+  .reco-box{
+    background:linear-gradient(150deg,#060F0A 0%, #0C2417 48%, #123C24 100%);
+    border:2px solid var(--matcha);
+    box-shadow:0 10px 28px -12px rgba(18,58,36,.7);}
+  .reco-title{color:#EBFBF1;}
+  .reco-box .hint{color:#C6DCCB;}
+  .reco-box .hint b{color:#FFDFA0;}
+  .reco-box .btn-reco{background:linear-gradient(135deg,#5FB56C,#2F7A3E);box-shadow:0 8px 20px -8px rgba(0,0,0,.5);}
+  .reco-box .btn-reco:hover{filter:brightness(1.08);}
 </style>
 
 <div class="wrap">
@@ -304,7 +327,7 @@
     <h1 class="brand">サッと食レポ<span class="dot">.</span></h1>
     <div class="garnish" aria-hidden="true"><span>🍜</span><span>🍣</span><span>🍕</span><span>🍖</span><span>🍰</span><span>🍺</span></div>
     <p class="tagline">その場で30秒メモ → 食べログ用の文章に。<br>文をつなげて、なめらかで自然な口コミに。</p>
-    <span class="ver" id="verBadge">v3.11.1 ・ 辞書 2026.12</span>
+    <span class="ver" id="verBadge">v3.11.2 ・ 辞書 2026.12</span>
   </header>
 
   <!-- PERSONA -->
@@ -597,7 +620,7 @@
 <script>
 (function(){
   "use strict";
-  var APP_VER="3.11.1", LEX_VER="2026.12", SCHEMA=3;
+  var APP_VER="3.11.2", LEX_VER="2026.12", SCHEMA=3;
   var $=function(id){return document.getElementById(id);};
   function rand(a){return a[Math.floor(Math.random()*a.length)];}
   function chance(p){return Math.random()<p;}
