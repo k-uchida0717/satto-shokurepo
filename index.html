@@ -66,6 +66,25 @@
   .field-name{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--muted);
     text-transform:uppercase;margin-bottom:6px;}
   .field-name.pos{color:var(--pos);} .field-name.neg{color:var(--neg);} .field-name.star{color:var(--gold);}
+  /* 概要＝この投稿のメイン。周囲と異なる金色コントラストで際立たせる */
+  .hero-field{position:relative;display:block;margin:4px 0 16px;
+    background:linear-gradient(135deg,rgba(242,169,59,.20),rgba(226,76,59,.07)),var(--surface);
+    border:2px solid var(--gold);border-radius:14px;padding:16px 14px 14px;
+    box-shadow:0 4px 16px rgba(242,169,59,.24);}
+  .hero-field .field-name{color:var(--accent-ink);font-size:12.5px;}
+  .hero-field textarea{background:var(--surface);border-color:var(--gold);}
+  .hero-field .hint{background:transparent;}
+  .hero-badge{position:absolute;top:-12px;left:14px;background:var(--gold);color:#fff;
+    font-size:11px;font-weight:700;letter-spacing:.05em;border-radius:999px;padding:4px 12px;box-shadow:0 2px 7px var(--shadow);}
+  /* ChatGPT転用＝おすすめ。緑のコントラストで推奨感を出す */
+  .reco-box{position:relative;border:2px solid var(--matcha);border-radius:14px;margin-top:20px;
+    background:linear-gradient(135deg,rgba(111,154,63,.16),var(--surface));
+    padding:18px 14px 15px;box-shadow:0 4px 16px rgba(111,154,63,.20);}
+  .reco-badge{position:absolute;top:-12px;left:14px;background:var(--matcha);color:#fff;
+    font-size:11px;font-weight:700;letter-spacing:.05em;border-radius:999px;padding:4px 12px;box-shadow:0 2px 7px var(--shadow);}
+  .reco-title{font-family:"Shippori Mincho B1",serif;font-weight:700;font-size:16px;margin:0 0 4px;color:var(--matcha);}
+  .btn-reco{background:var(--matcha);color:#fff;width:100%;font-size:15px;}
+  .btn-reco:hover{filter:brightness(1.06);}
   input[type=text],textarea,select{width:100%;font:inherit;color:var(--ink);background:var(--surface-2);
     border:1px solid var(--hair-strong);border-radius:10px;padding:11px 12px;}
   input[type=text]:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent;}
@@ -208,7 +227,7 @@
     <h1 class="brand">サッと食レポ<span class="dot">.</span></h1>
     <div class="garnish" aria-hidden="true">🍜　🍣　🍕　🍖　🍰　🍺</div>
     <p class="tagline">その場で30秒メモ → 食べログ用の文章に。<br>文をつなげて、なめらかで自然な口コミに。</p>
-    <span class="ver" id="verBadge">v3.10.0 ・ 辞書 2026.12</span>
+    <span class="ver" id="verBadge">v3.10.1 ・ 辞書 2026.12</span>
   </header>
 
   <!-- PERSONA -->
@@ -277,10 +296,6 @@
         <div id="nearSug" style="margin-top:6px"></div>
       </div>
       <p class="hint">写真に位置情報があれば撮影場所の住所を表示します。「近くのお店を候補に出す」で、地図データ（OpenStreetMap）から周辺の飲食店を距離順に一覧化して選べます。Googleマップのリンクから正確な地点を開き、店名をコピーして下の欄に貼るのも便利です。日時・時刻から訪問時期や状況も自動入力します。</p></label>
-    <label class="field"><span class="field-name">🏪 お店を選ぶ（履歴・サンプルから）</span>
-      <input type="text" id="storeSearch" placeholder="お店の名前を入力（過去に保存したお店が候補に出ます）" autocomplete="off">
-      <div id="storeSug"></div>
-      <p class="hint">以前保存したお店やサンプルが候補に出ます（🕘は過去に訪れたお店）。選ぶと店名・エリア・ジャンルを自動入力。新しいお店は下の「店名」欄に直接入力してください。</p></label>
     <div class="row">
       <label class="field"><span class="field-name">店名 <button class="tog" id="copyShop" type="button">📋 コピー</button></span><input type="text" id="shop" placeholder="例）大衆酒場 とり松"></label>
       <label class="field"><span class="field-name">エリア・場所</span><input type="text" id="area" placeholder="例）新橋"></label>
@@ -334,9 +349,10 @@
       <div class="score-wrap"><span class="score-val" id="scoreVal">3.5</span>
         <div style="flex:1"><input type="range" id="score" min="2.5" max="5" step="0.5" value="3.5"><div class="stars" id="stars"></div></div>
       </div></label>
-    <label class="field" style="background:var(--accent-soft);border:1px solid var(--hair-strong);border-radius:12px;padding:12px 13px 13px;">
-      <span class="field-name" style="color:var(--accent-ink)">📝 今回の飲食の概要（この投稿のメイン・任意）</span>
-      <textarea id="gaiyou" placeholder="例）名物のつくねが黄身とろとろで絶品。落ち着いた大人の空間で、ホテル最上階からの夜景も最高だった" style="min-height:64px"></textarea>
+    <label class="hero-field">
+      <span class="hero-badge">★ この投稿のメイン</span>
+      <span class="field-name">📝 今回の飲食の概要（任意・ここが主役）</span>
+      <textarea id="gaiyou" placeholder="例）名物のつくねが黄身とろとろで絶品。落ち着いた大人の空間で、ホテル最上階からの夜景も最高だった" style="min-height:66px"></textarea>
       <p class="hint">「一言で言うと、どんな料理がどう美味しくて、お店の雰囲気はどうだったか。立地や施設の印象は？」をひとまとめに。ここに書くと<b>冒頭から最優先で織り込み</b>、投稿の主役になります（空欄でもOK）。</p></label>
     <label class="field"><span class="field-name pos">👍 良かった点・キーワード（読点区切り・任意）</span>
       <textarea id="posMemo" placeholder="例）大将が気さく、つくねの黄身がとろとろ、〆のお茶漬けが絶品"></textarea>
@@ -354,10 +370,11 @@
     <h2 class="step-label"><span class="step-num">2</span>文章を生成</h2>
     <button class="btn btn-primary" id="genBtn" type="button">✍️ 食べログ用の文章をつくる</button>
     <div id="output"></div>
-    <div style="border-top:1px solid var(--hair);margin-top:18px;padding-top:16px">
-      <div class="dict-sec-t" style="margin-bottom:4px">🤖 もっと凝った文章を作りたいとき</div>
-      <p class="hint" style="margin-top:0;margin-bottom:10px">入力した内容をまとめた「ChatGPT用のプロンプト」を作れます。コピーしてChatGPTに貼り付ければ、同じ情報からさらにバリエーション豊かな文章を作ってもらえます（本アプリ自体は生成AIを使っていません）。</p>
-      <button class="btn btn-ghost" id="gptBtn" type="button" style="width:100%">🤖 ChatGPT用のプロンプトを作る</button>
+    <div class="reco-box">
+      <span class="reco-badge">✨ いちばんのおすすめ</span>
+      <p class="reco-title">🤖 ChatGPTでさらに自然な文章に</p>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">入力した内容をまとめた「ChatGPT用プロンプト」を作れます。コピーしてChatGPTに貼り付けるだけで、<b>構成がきれいにまとまった、より自然でバリエーション豊かな文章</b>に仕上がります。こだわりたいときはこちらが断然おすすめです（本アプリ自体は生成AIを使っていません）。</p>
+      <button class="btn btn-reco" id="gptBtn" type="button">🤖 ChatGPT用のプロンプトを作る</button>
       <div id="gptWrap" hidden style="margin-top:12px">
         <textarea id="gptOut" readonly style="min-height:200px;font-size:12.5px;font-family:ui-monospace,monospace"></textarea>
         <button class="btn btn-primary" id="gptCopy" type="button" style="width:100%;margin-top:8px">📋 プロンプトをコピー</button>
@@ -503,7 +520,7 @@
 <script>
 (function(){
   "use strict";
-  var APP_VER="3.10.0", LEX_VER="2026.12", SCHEMA=3;
+  var APP_VER="3.10.1", LEX_VER="2026.12", SCHEMA=3;
   var $=function(id){return document.getElementById(id);};
   function rand(a){return a[Math.floor(Math.random()*a.length)];}
   function chance(p){return Math.random()<p;}
@@ -608,7 +625,7 @@
   function applyStore(s){
     $("shop").value=s.name;if(s.area)$("area").value=s.area;
     if(s.genre){var g=$("genre");for(var i=0;i<g.options.length;i++){if(g.options[i].value===s.genre)g.selectedIndex=i;}}
-    $("storeSearch").value="";$("storeSug").innerHTML="";toast("店舗情報を入力しました");
+    if($("storeSearch"))$("storeSearch").value="";if($("storeSug"))$("storeSug").innerHTML="";toast("店舗情報を入力しました");
   }
   function renderSug(q){
     var box=$("storeSug");box.innerHTML="";
@@ -628,9 +645,12 @@
     });
     box.appendChild(list);
   }
-  $("storeSearch").addEventListener("input",function(){renderSug($("storeSearch").value.trim());});
-  $("storeSearch").addEventListener("focus",function(){renderSug($("storeSearch").value.trim());});
-  $("storeSearch").addEventListener("blur",function(){setTimeout(function(){$("storeSug").innerHTML="";},200);});
+  /* 店名サーチUIはv3.10.1で撤去（近くのお店＝applyStore は継続利用）。listenerは要素がある時だけ張る */
+  if($("storeSearch")){
+    $("storeSearch").addEventListener("input",function(){renderSug($("storeSearch").value.trim());});
+    $("storeSearch").addEventListener("focus",function(){renderSug($("storeSearch").value.trim());});
+    $("storeSearch").addEventListener("blur",function(){setTimeout(function(){if($("storeSug"))$("storeSug").innerHTML="";},200);});
+  }
   if($("nearBtn"))$("nearBtn").addEventListener("click",function(){
     if(!lastGeo){toast("先に位置情報つきの写真を選んでください");return;}
     $("nearSug").innerHTML='<div class="empty-sm">🔎 近くのお店を検索中…（数秒かかります）</div>';
