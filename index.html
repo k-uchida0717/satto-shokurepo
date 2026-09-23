@@ -218,16 +218,74 @@
   .cov-row .cfill{height:100%;background:var(--matcha);border-radius:999px;}
   .cov-row .cp{flex:none;width:40px;text-align:right;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;}
   .val-err{color:var(--neg);} .val-warn{color:var(--warn);} .val-ok{color:var(--pos);}
-  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
+
+  /* ===================== v3.11 ビジュアル刷新（ポップ＆ハイセンス） ===================== */
+  :root{
+    --grad-warm:linear-gradient(135deg,var(--accent) 0%,var(--gold) 100%);
+    --grad-matcha:linear-gradient(135deg,var(--matcha),#5C8A30);
+    --ring:rgba(226,76,59,.16);
+  }
+  /* 食欲をそそる、ほんのり温かいメッシュ背景 */
+  body{
+    background:
+      radial-gradient(1150px 480px at 108% -8%, rgba(242,169,59,.16), transparent 60%),
+      radial-gradient(880px 480px at -14% 2%, rgba(226,76,59,.11), transparent 58%),
+      var(--paper);
+    background-attachment:fixed;
+  }
+  /* ヒーロー見出し */
+  header.app{padding-top:34px;}
+  header.app::before{height:184px;background:radial-gradient(130% 100% at 50% 0%, var(--accent-soft) 0%, transparent 68%);opacity:.85;}
+  .brand{font-size:38px;letter-spacing:.05em;}
+  @media (max-width:400px){.brand{font-size:32px;}}
+  .tagline{font-size:13.5px;}
+  .ver{background:var(--surface);border-color:var(--hair-strong);box-shadow:0 1px 4px var(--shadow);font-weight:700;}
+  /* 絵文字を“アイコンチップ”に */
+  .garnish{display:flex;justify-content:center;gap:9px;letter-spacing:0;margin:14px 0 4px;filter:none;flex-wrap:wrap;}
+  .garnish span{width:40px;height:40px;display:grid;place-items:center;font-size:20px;border-radius:14px;
+    background:var(--surface);border:1px solid var(--hair);box-shadow:0 3px 9px -4px var(--shadow);
+    transform:rotate(-4deg);transition:transform .18s ease;}
+  .garnish span:nth-child(even){transform:rotate(4deg);}
+  .garnish span:hover{transform:translateY(-3px) rotate(0);}
+  /* カード：奥行き＋上部グラデーションのアクセントライン */
+  .card{border-radius:20px;position:relative;overflow:hidden;
+    box-shadow:0 10px 28px -16px var(--shadow),0 2px 6px -3px var(--shadow);}
+  .card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;pointer-events:none;
+    background:linear-gradient(90deg,var(--accent),var(--gold) 55%,var(--matcha));opacity:.9;}
+  /* ステップ番号：グラデーションの丸バッジ */
+  .step-num{background:var(--grad-warm);box-shadow:0 4px 10px -3px var(--ring);}
+  .step-label{font-size:17.5px;}
+  /* プライマリボタン：グラデーション＋やわらかい影 */
+  .btn-primary{background:var(--grad-warm);box-shadow:0 10px 22px -10px var(--ring);letter-spacing:.03em;}
+  .btn-primary:hover{background:var(--grad-warm);filter:brightness(1.06);}
+  .btn-reco{background:var(--grad-matcha);box-shadow:0 10px 22px -10px rgba(111,154,63,.5);letter-spacing:.03em;}
+  .btn-reco:hover{filter:brightness(1.07);}
+  /* シーン系チップの押下をグラデーションで華やかに（tone/mood/starは各色を維持） */
+  .chip{transition:all .14s ease;}
+  .chip[aria-pressed="true"]{background:var(--grad-warm);border-color:transparent;box-shadow:0 4px 10px -4px var(--ring);}
+  /* 総合点を大きくグラデーション表示 */
+  #scoreVal{background:var(--grad-warm);-webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;color:transparent;font-size:34px;}
+  .stars{font-size:18px;}
+  /* できあがりカード：主役感を出す */
+  .out-card{border-radius:20px;box-shadow:0 16px 40px -20px var(--ring),0 3px 10px -5px var(--shadow);}
+  .out-title{font-size:20px;line-height:1.55;}
+  .out-body{font-size:15px;line-height:1.9;}
+  .reroll-label{color:var(--accent-ink);}
+  /* 概要（メイン）の金枠をさらに際立たせる（既存 .hero-field を微強化） */
+  .hero-field{box-shadow:0 8px 24px -12px rgba(242,169,59,.4);}
+  /* 入力フォーカスをアクセントリングで */
+  input[type=text]:focus,textarea:focus,select:focus{outline-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft);}
 </style>
 
 <div class="wrap">
   <div class="toolbar"><button class="theme-btn" id="themeBtn" type="button">◐ 表示切替</button></div>
   <header class="app">
     <h1 class="brand">サッと食レポ<span class="dot">.</span></h1>
-    <div class="garnish" aria-hidden="true">🍜　🍣　🍕　🍖　🍰　🍺</div>
+    <div class="garnish" aria-hidden="true"><span>🍜</span><span>🍣</span><span>🍕</span><span>🍖</span><span>🍰</span><span>🍺</span></div>
     <p class="tagline">その場で30秒メモ → 食べログ用の文章に。<br>文をつなげて、なめらかで自然な口コミに。</p>
-    <span class="ver" id="verBadge">v3.10.1 ・ 辞書 2026.12</span>
+    <span class="ver" id="verBadge">v3.11.0 ・ 辞書 2026.12</span>
   </header>
 
   <!-- PERSONA -->
@@ -520,7 +578,7 @@
 <script>
 (function(){
   "use strict";
-  var APP_VER="3.10.1", LEX_VER="2026.12", SCHEMA=3;
+  var APP_VER="3.11.0", LEX_VER="2026.12", SCHEMA=3;
   var $=function(id){return document.getElementById(id);};
   function rand(a){return a[Math.floor(Math.random()*a.length)];}
   function chance(p){return Math.random()<p;}
