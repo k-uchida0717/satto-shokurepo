@@ -6,6 +6,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<!-- EXIF読み取り（HEIC/JPEG対応）。読み込めない環境では自前のJPEGパーサにフォールバック -->
+<script src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.js"></script>
 <style>
   :root{
     --paper:#F5F0E6; --surface:#FFFDF8; --surface-2:#EFE8DA;
@@ -191,7 +193,7 @@
   <header class="app">
     <h1 class="brand">サッと食レポ<span class="dot">.</span></h1>
     <p class="tagline">その場で30秒メモ → 食べログ用の文章に。<br>文をつなげて、なめらかで自然な口コミに。</p>
-    <span class="ver" id="verBadge">v3.9.3 ・ 辞書 2026.11</span>
+    <span class="ver" id="verBadge">v3.9.4 ・ 辞書 2026.11</span>
   </header>
 
   <!-- PERSONA -->
@@ -470,7 +472,7 @@
 <script>
 (function(){
   "use strict";
-  var APP_VER="3.9.3", LEX_VER="2026.11", SCHEMA=3;
+  var APP_VER="3.9.4", LEX_VER="2026.11", SCHEMA=3;
   var $=function(id){return document.getElementById(id);};
   function rand(a){return a[Math.floor(Math.random()*a.length)];}
   function chance(p){return Math.random()<p;}
@@ -679,9 +681,11 @@
     reverseGeocode(gps.lat,gps.lon,function(a){
       if(a&&a.text){
         box.innerHTML='📍 <b>撮影場所（写真の位置情報）</b><br>'+esc(a.text)+
+          ' <button class="tog" id="copyAddr" type="button">📋 住所をコピー</button>'+
           '<br><span '+MUTED+'>'+esc(coord)+' ／ '+mapLink+'</span>'+
           '<br><span '+MUTED+'>下のボタンで近くのお店を候補にできます。</span>';
         if(a.area&&!$("area").value.trim())$("area").value=a.area; // エリア欄が空なら補完（文章にも反映）
+        var ca=$("copyAddr");if(ca)ca.addEventListener("click",function(){copyText(a.text);});
       }else{
         box.innerHTML='📍 <b>撮影場所の座標</b>：'+esc(coord)+' ／ '+mapLink+'<br><span '+MUTED+'>住所は取得できませんでした（通信環境をご確認ください）。</span>';
       }
@@ -707,20 +711,33 @@
     for(var i=0;i<map.length;i++)if(map[i][0].test(hay))return map[i][1];
     return "";
   }
+  var OVERPASS=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter"];
   function nearbyStores(lat,lon,cb){
     if(typeof fetch!=="function"){cb(null);return;}
     var q='[out:json][timeout:20];(node["amenity"~"restaurant|cafe|fast_food|bar|pub"](around:250,'+lat+','+lon+');'
          +'node["shop"~"bakery|confectionery|pastry"](around:250,'+lat+','+lon+'););out center 60;';
-    fetch("https://overpass-api.de/api/interpreter",{method:"POST",body:"data="+encodeURIComponent(q)})
-      .then(function(r){return r.ok?r.json():null;}).then(function(j){
-        if(!j){cb(null);return;}
-        var els=(j.elements||[]).filter(function(e){return e.tags&&e.tags.name;});
-        var rows=els.map(function(e){var la=e.lat||(e.center&&e.center.lat),lo=e.lon||(e.center&&e.center.lon);
-          return {name:e.tags.name,genre:osmGenre(e.tags),m:haversine(lat,lon,la,lo)};})
-          .sort(function(a,b){return a.m-b.m;});
-        var seen={},uniq=[];rows.forEach(function(s){if(!seen[s.name]){seen[s.name]=1;uniq.push(s);}});
-        cb(uniq.slice(0,15));
-      }).catch(function(){cb(null);});
+    var i=0;
+    function attempt(){
+      if(i>=OVERPASS.length){cb(null);return;}
+      var url=OVERPASS[i++];
+      var ac=(typeof AbortController!=="undefined")?new AbortController():null;
+      var to=ac?setTimeout(function(){ac.abort();},16000):null;
+      fetch(url,{method:"POST",body:"data="+encodeURIComponent(q),signal:ac?ac.signal:undefined})
+        .then(function(r){return r.text();})
+        .then(function(txt){
+          if(to)clearTimeout(to);
+          if(txt.charAt(0)!=="{"){attempt();return;} // エラーページ等はJSONでない→次のミラーへ
+          var j=JSON.parse(txt);
+          var els=(j.elements||[]).filter(function(e){return e.tags&&e.tags.name;});
+          var rows=els.map(function(e){var la=e.lat||(e.center&&e.center.lat),lo=e.lon||(e.center&&e.center.lon);
+            return {name:e.tags.name,genre:osmGenre(e.tags),m:haversine(lat,lon,la,lo)};})
+            .sort(function(a,b){return a.m-b.m;});
+          var seen={},uniq=[];rows.forEach(function(s){if(!seen[s.name]){seen[s.name]=1;uniq.push(s);}});
+          cb(uniq.slice(0,15));
+        })
+        .catch(function(){if(to)clearTimeout(to);attempt();}); // 失敗・タイムアウト→次のミラー
+    }
+    attempt();
   }
   function renderNear(list){
     var box=$("nearSug");if(!box)return;box.innerHTML="";
@@ -730,13 +747,28 @@
     list.forEach(function(s){
       var it=document.createElement("div");it.className="sug-item";
       var sub=[s.genre,(s.m+"m")].filter(Boolean).join("・");
-      it.innerHTML='<b>'+esc(s.name)+'</b><span>'+esc(sub)+'</span>';
+      it.innerHTML='<button class="tog" type="button" data-copy="1" style="float:right">📋 コピー</button>'+
+        '<b>'+esc(s.name)+'</b><span>'+esc(sub)+'</span>';
       it.addEventListener("click",function(){applyStore({name:s.name,area:$("area").value.trim(),genre:s.genre});});
+      var cbtn=it.querySelector('[data-copy]');
+      if(cbtn)cbtn.addEventListener("click",function(ev){ev.stopPropagation();copyText(s.name);toast("店名をコピー：食べログの検索に貼り付けられます");});
       ul.appendChild(it);
     });
     box.appendChild(ul);
   }
-  function readExifDate(file,cb){
+  /* 撮影メタ情報（日時＋GPS）を取得。exifr があればHEIC/JPEG両対応、無ければ自前JPEGパーサ */
+  function readExifMeta(file,cb){
+    if(window.exifr&&exifr.parse){
+      exifr.parse(file,{ifd0:true,exif:true,gps:true}).then(function(o){
+        o=o||{};var out={};
+        var dt=o.DateTimeOriginal||o.CreateDate||o.DateTime||o.ModifyDate;
+        if(dt&&dt.getFullYear){out.y=dt.getFullYear();out.mo=dt.getMonth()+1;out.d=dt.getDate();out.h=dt.getHours();out.mi=dt.getMinutes();}
+        if(typeof o.latitude==="number"&&typeof o.longitude==="number"&&!(o.latitude===0&&o.longitude===0))out.gps={lat:o.latitude,lon:o.longitude};
+        if(out.y||out.gps)cb(out); else legacyReadExif(file,cb);
+      }).catch(function(){legacyReadExif(file,cb);});
+    } else legacyReadExif(file,cb);
+  }
+  function legacyReadExif(file,cb){
     try{
       var r=new FileReader();
       r.onload=function(){
@@ -759,7 +791,7 @@
     files.forEach(function(f){photos.push(URL.createObjectURL(f));});
     renderPhotos();
     if(!photoDate&&files[0]){
-      readExifDate(files[0],function(d){
+      readExifMeta(files[0],function(d){
         d=d||{}; // メタ情報が全く無くても「位置情報なし」を表示できるように
         if(d.y){ // 日時が取れたときだけ日付系を反映
           photoDate=d;
