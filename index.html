@@ -191,7 +191,7 @@
   <header class="app">
     <h1 class="brand">サッと食レポ<span class="dot">.</span></h1>
     <p class="tagline">その場で30秒メモ → 食べログ用の文章に。<br>文をつなげて、なめらかで自然な口コミに。</p>
-    <span class="ver" id="verBadge">v3.9.2 ・ 辞書 2026.11</span>
+    <span class="ver" id="verBadge">v3.9.3 ・ 辞書 2026.11</span>
   </header>
 
   <!-- PERSONA -->
@@ -259,7 +259,11 @@
         <label class="photo-add">＋<input type="file" id="photoInput" accept="image/*" multiple></label>
       </div>
       <div id="geoOut" class="note" hidden style="margin-top:10px"></div>
-      <p class="hint">写真に位置情報があれば撮影場所の住所を表示します（お店の検索の手がかりに）。日時・時刻から訪問時期や状況も自動入力します。位置情報の利用は人物設定でON/OFFできます。</p></label>
+      <div id="nearWrap" hidden style="margin-top:8px">
+        <button class="btn btn-ghost dict-add" id="nearBtn" type="button">🔎 この地点の近くのお店を候補に出す</button>
+        <div id="nearSug" style="margin-top:6px"></div>
+      </div>
+      <p class="hint">写真に位置情報があれば撮影場所の住所を表示します。「近くのお店を候補に出す」で、地図データ（OpenStreetMap）から周辺の飲食店を距離順に一覧化して選べます。日時・時刻から訪問時期や状況も自動入力します。位置情報の利用は人物設定でON/OFFできます。</p></label>
     <div class="row">
       <label class="field"><span class="field-name">店名</span><input type="text" id="shop" placeholder="例）大衆酒場 とり松"></label>
       <label class="field"><span class="field-name">エリア・場所</span><input type="text" id="area" placeholder="例）新橋"></label>
@@ -466,7 +470,7 @@
 <script>
 (function(){
   "use strict";
-  var APP_VER="3.9.2", LEX_VER="2026.11", SCHEMA=3;
+  var APP_VER="3.9.3", LEX_VER="2026.11", SCHEMA=3;
   var $=function(id){return document.getElementById(id);};
   function rand(a){return a[Math.floor(Math.random()*a.length)];}
   function chance(p){return Math.random()<p;}
@@ -594,6 +598,11 @@
   $("storeSearch").addEventListener("input",function(){renderSug($("storeSearch").value.trim());});
   $("storeSearch").addEventListener("focus",function(){renderSug($("storeSearch").value.trim());});
   $("storeSearch").addEventListener("blur",function(){setTimeout(function(){$("storeSug").innerHTML="";},200);});
+  if($("nearBtn"))$("nearBtn").addEventListener("click",function(){
+    if(!lastGeo){toast("先に位置情報つきの写真を選んでください");return;}
+    $("nearSug").innerHTML='<div class="empty-sm">🔎 近くのお店を検索中…（数秒かかります）</div>';
+    nearbyStores(lastGeo.lat,lastGeo.lon,renderNear);
+  });
 
   /* ---------- photos + EXIF ---------- */
   var photos=[], photoDate=null;
@@ -651,22 +660,27 @@
     }).catch(function(){cb(null);});
   }
   var MUTED='style="color:var(--muted);font-size:11.5px"';
+  var lastGeo=null; // 直近に取得した撮影地点（近傍検索の起点）
+  function setNearVisible(on){var w=$("nearWrap");if(w)w.hidden=!on;if(!on){var ns=$("nearSug");if(ns)ns.innerHTML="";}}
   function showGeoFromPhoto(gps){
     var box=$("geoOut");if(!box)return;
+    lastGeo={lat:gps.lat,lon:gps.lon};
     var coord=gps.lat.toFixed(5)+", "+gps.lon.toFixed(5);
     var mapUrl="https://www.openstreetmap.org/?mlat="+gps.lat+"&mlon="+gps.lon+"#map=18/"+gps.lat+"/"+gps.lon;
     var mapLink='<a href="'+mapUrl+'" target="_blank" rel="noopener">地図で開く</a>';
     box.hidden=false;
-    if($("pGeo")&&!$("pGeo").checked){ // 住所変換オフ：座標だけ表示（外部送信なし）
-      box.innerHTML='📍 <b>撮影場所の座標</b>：'+esc(coord)+' ／ '+mapLink+'<br><span '+MUTED+'>住所への変換はオフです（人物設定で切替）。</span>';
+    if($("pGeo")&&!$("pGeo").checked){ // 位置情報の外部利用オフ：座標だけ表示（送信なし）
+      box.innerHTML='📍 <b>撮影場所の座標</b>：'+esc(coord)+' ／ '+mapLink+'<br><span '+MUTED+'>住所への変換・近隣検索はオフです（人物設定で切替）。</span>';
+      setNearVisible(false);
       return;
     }
+    setNearVisible(true); // 近くのお店を探すボタンを出す
     box.innerHTML='📍 撮影場所を特定中…（'+esc(coord)+'）';
     reverseGeocode(gps.lat,gps.lon,function(a){
       if(a&&a.text){
         box.innerHTML='📍 <b>撮影場所（写真の位置情報）</b><br>'+esc(a.text)+
           '<br><span '+MUTED+'>'+esc(coord)+' ／ '+mapLink+'</span>'+
-          '<br><span '+MUTED+'>この住所を手がかりにお店を検索してください。</span>';
+          '<br><span '+MUTED+'>下のボタンで近くのお店を候補にできます。</span>';
         if(a.area&&!$("area").value.trim())$("area").value=a.area; // エリア欄が空なら補完（文章にも反映）
       }else{
         box.innerHTML='📍 <b>撮影場所の座標</b>：'+esc(coord)+' ／ '+mapLink+'<br><span '+MUTED+'>住所は取得できませんでした（通信環境をご確認ください）。</span>';
@@ -674,8 +688,53 @@
     });
   }
   function showNoGeo(){
-    var box=$("geoOut");if(!box)return;box.hidden=false;
+    var box=$("geoOut");if(!box)return;box.hidden=false;lastGeo=null;setNearVisible(false);
     box.innerHTML='<span '+MUTED+'>この写真には位置情報が含まれていません（撮影時に位置情報オフ／スクショ／HEIC等）。エリアは手入力してください。</span>';
+  }
+  /* ---------- 近傍の飲食店を地図データ（Overpass）から取得 ---------- */
+  function haversine(a,b,c,d){var R=6371000,r=Math.PI/180,dLat=(c-a)*r,dLon=(d-b)*r,
+    s=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(a*r)*Math.cos(c*r)*Math.sin(dLon/2)*Math.sin(dLon/2);
+    return Math.round(R*2*Math.atan2(Math.sqrt(s),Math.sqrt(1-s)));}
+  function osmGenre(t){
+    var hay=((t.cuisine||"")+" "+(t.amenity||"")+" "+(t.shop||"")+" "+(t.name||"")).toLowerCase();
+    var map=[[/sushi|寿司|鮨/,"寿司"],[/yakiniku|korean|bbq|焼肉/,"焼肉"],[/yakitori|焼き?鳥/,"焼き鳥"],
+      [/ramen|拉麺|ラーメン/,"ラーメン"],[/soba|udon|そば|蕎麦|うどん/,"そば・うどん"],
+      [/italian|pizza|pasta|イタリ/,"イタリアン"],[/french|フレンチ/,"フレンチ"],
+      [/chinese|中華|中国/,"中華"],[/cafe|coffee|喫茶|カフェ|珈琲/,"カフェ"],
+      [/bakery|confectionery|pastry|cake|sweets|dessert|ice_cream|スイーツ|洋菓子|ケーキ/,"スイーツ"],
+      [/izakaya|pub|居酒屋|酒場/,"居酒屋"],[/\bbar\b|wine|ワイン|バル/,"バル・ワイン"],
+      [/teishoku|定食|食堂|japanese|和食/,"定食・食堂"]];
+    for(var i=0;i<map.length;i++)if(map[i][0].test(hay))return map[i][1];
+    return "";
+  }
+  function nearbyStores(lat,lon,cb){
+    if(typeof fetch!=="function"){cb(null);return;}
+    var q='[out:json][timeout:20];(node["amenity"~"restaurant|cafe|fast_food|bar|pub"](around:250,'+lat+','+lon+');'
+         +'node["shop"~"bakery|confectionery|pastry"](around:250,'+lat+','+lon+'););out center 60;';
+    fetch("https://overpass-api.de/api/interpreter",{method:"POST",body:"data="+encodeURIComponent(q)})
+      .then(function(r){return r.ok?r.json():null;}).then(function(j){
+        if(!j){cb(null);return;}
+        var els=(j.elements||[]).filter(function(e){return e.tags&&e.tags.name;});
+        var rows=els.map(function(e){var la=e.lat||(e.center&&e.center.lat),lo=e.lon||(e.center&&e.center.lon);
+          return {name:e.tags.name,genre:osmGenre(e.tags),m:haversine(lat,lon,la,lo)};})
+          .sort(function(a,b){return a.m-b.m;});
+        var seen={},uniq=[];rows.forEach(function(s){if(!seen[s.name]){seen[s.name]=1;uniq.push(s);}});
+        cb(uniq.slice(0,15));
+      }).catch(function(){cb(null);});
+  }
+  function renderNear(list){
+    var box=$("nearSug");if(!box)return;box.innerHTML="";
+    if(list===null){box.innerHTML='<div class="empty-sm" style="color:var(--neg)">近くのお店を取得できませんでした。時間をおいて再試行するか、住所を手がかりに手入力してください。</div>';return;}
+    if(!list.length){box.innerHTML='<div class="empty-sm">この地点の近くに、地図データに登録された飲食店が見つかりませんでした。住所を手がかりに手入力してください。</div>';return;}
+    var ul=document.createElement("div");ul.className="sug-list";
+    list.forEach(function(s){
+      var it=document.createElement("div");it.className="sug-item";
+      var sub=[s.genre,(s.m+"m")].filter(Boolean).join("・");
+      it.innerHTML='<b>'+esc(s.name)+'</b><span>'+esc(sub)+'</span>';
+      it.addEventListener("click",function(){applyStore({name:s.name,area:$("area").value.trim(),genre:s.genre});});
+      ul.appendChild(it);
+    });
+    box.appendChild(ul);
   }
   function readExifDate(file,cb){
     try{
