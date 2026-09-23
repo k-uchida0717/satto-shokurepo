@@ -191,7 +191,7 @@
   <header class="app">
     <h1 class="brand">サッと食レポ<span class="dot">.</span></h1>
     <p class="tagline">その場で30秒メモ → 食べログ用の文章に。<br>文をつなげて、なめらかで自然な口コミに。</p>
-    <span class="ver" id="verBadge">v3.9 ・ 辞書 2026.11</span>
+    <span class="ver" id="verBadge">v3.9.1 ・ 辞書 2026.11</span>
   </header>
 
   <!-- PERSONA -->
@@ -246,10 +246,10 @@
   <!-- STEP 1 -->
   <section class="card">
     <h2 class="step-label"><span class="step-num">1</span>その場でサッと記録</h2>
-    <label class="field"><span class="field-name">🔎 店名で検索（デモ）</span>
-      <input type="text" id="storeSearch" placeholder="例）とり松／ゆらぎ／新橋" autocomplete="off">
+    <label class="field"><span class="field-name">🏪 お店を選ぶ（履歴・サンプルから）</span>
+      <input type="text" id="storeSearch" placeholder="お店の名前を入力（過去に保存したお店が候補に出ます）" autocomplete="off">
       <div id="storeSug"></div>
-      <p class="hint">候補を選ぶと店名・エリア・ジャンルが自動入力。実運用ではGoogle Placesで全国を検索します。</p></label>
+      <p class="hint">以前保存したお店やサンプルが候補に出ます（🕘は過去に訪れたお店）。選ぶと店名・エリア・ジャンルを自動入力。新しいお店は下の「店名」欄に直接入力してください。</p></label>
     <label class="field"><span class="field-name">📷 写真（撮影日から訪問時期を自動取得）</span>
       <div class="photo-grid" id="photoGrid">
         <label class="photo-add">＋<input type="file" id="photoInput" accept="image/*" multiple></label>
@@ -269,6 +269,18 @@
       <label class="field"><span class="field-name">時間帯</span>
         <select id="time"><option>夜</option><option>昼</option></select></label>
     </div>
+    <label class="field"><span class="field-name">🗓 どんな時に訪れた？（状況・任意）</span>
+      <select id="situ">
+        <option value="">おまかせ（時間帯から自然に）</option>
+        <option value="after">仕事終わりに</option>
+        <option value="before">仕事の前に</option>
+        <option value="lunch">仕事の合間・ランチ</option>
+        <option value="holiday">休日のおでかけ</option>
+        <option value="trip_work">出張・遠征の合間</option>
+        <option value="travel">旅行先で</option>
+        <option value="special">記念日・特別な日</option>
+      </select>
+      <p class="hint">選ぶと、その状況に合った切り出し・締めになります（例：ランチ休憩なら「仕事の合間に」）。写真の日付・時刻からも自動で推測します。</p></label>
     <div class="row">
       <label class="field"><span class="field-name">予算（ひとり）</span>
         <select id="budget">
@@ -448,7 +460,7 @@
 <script>
 (function(){
   "use strict";
-  var APP_VER="3.9", LEX_VER="2026.11", SCHEMA=3;
+  var APP_VER="3.9.1", LEX_VER="2026.11", SCHEMA=3;
   var $=function(id){return document.getElementById(id);};
   function rand(a){return a[Math.floor(Math.random()*a.length)];}
   function chance(p){return Math.random()<p;}
@@ -527,7 +539,7 @@
   }
   $("dishes").addEventListener("input",renderDishRows);
 
-  /* ---------- 店名検索（デモ） ---------- */
+  /* ---------- お店の候補（自分の履歴＋内蔵サンプル。実データ検索ではありません） ---------- */
   var STORES=[
     {name:"大衆酒場 とり松",area:"新橋",genre:"居酒屋"},{name:"立ち飲み かどや",area:"上野",genre:"居酒屋"},
     {name:"喫茶 ゆらぎ",area:"神保町",genre:"カフェ"},{name:"COFFEE STAND 灯",area:"中目黒",genre:"カフェ"},
@@ -536,24 +548,46 @@
     {name:"Trattoria Sole",area:"代官山",genre:"イタリアン"},{name:"ワインバル ぶどうの木",area:"恵比寿",genre:"バル・ワイン"},
     {name:"手打ちそば 石臼",area:"浅草",genre:"そば・うどん"},{name:"パティスリー みのり",area:"自由が丘",genre:"スイーツ"}
   ];
+  /* 過去に保存した下書きから、入力済みのお店を新しい順で候補化（同じ店名は1つに） */
+  function recentStores(){
+    var out=[],seen={};
+    try{
+      var a=JSON.parse(localStorage.getItem(KEY)||"[]");
+      a.forEach(function(r){var nm=(r.shop||"").trim();if(!nm||seen[nm])return;seen[nm]=1;
+        out.push({name:nm,area:(r.area||"").trim(),genre:r.genre||"",recent:true});});
+    }catch(e){}
+    return out;
+  }
+  function storeCandidates(){
+    var hist=recentStores(),seen={};hist.forEach(function(s){seen[s.name]=1;});
+    return hist.concat(STORES.filter(function(s){return !seen[s.name];}));
+  }
+  function applyStore(s){
+    $("shop").value=s.name;if(s.area)$("area").value=s.area;
+    if(s.genre){var g=$("genre");for(var i=0;i<g.options.length;i++){if(g.options[i].value===s.genre)g.selectedIndex=i;}}
+    $("storeSearch").value="";$("storeSug").innerHTML="";toast("店舗情報を入力しました");
+  }
   function renderSug(q){
-    var box=$("storeSug");box.innerHTML="";if(!q)return;
-    var hits=STORES.filter(function(s){return (s.name+s.area+s.genre).indexOf(q)>=0;}).slice(0,6);
+    var box=$("storeSug");box.innerHTML="";
+    var cand=storeCandidates();
+    var hits=q?cand.filter(function(s){return (s.name+s.area+s.genre).indexOf(q)>=0;})
+              :cand.filter(function(s){return s.recent;}).slice(0,5); // 未入力時は最近のお店だけ表示
     if(!hits.length)return;
+    hits=hits.slice(0,8);
     var list=document.createElement("div");list.className="sug-list";
     hits.forEach(function(s){
       var it=document.createElement("div");it.className="sug-item";
-      it.innerHTML='<b>'+esc(s.name)+'</b><span>'+esc(s.area)+'・'+esc(s.genre)+'</span>';
-      it.addEventListener("click",function(){
-        $("shop").value=s.name;$("area").value=s.area;
-        var g=$("genre");for(var i=0;i<g.options.length;i++){if(g.options[i].value===s.genre)g.selectedIndex=i;}
-        $("storeSearch").value="";box.innerHTML="";toast("店舗情報を入力しました");
-      });
+      var sub=[s.area,s.genre].filter(Boolean).join("・");
+      it.innerHTML='<b>'+esc(s.name)+'</b><span>'+(s.recent?"🕘 ":"")+esc(sub)+'</span>';
+      it.addEventListener("mousedown",function(e){e.preventDefault();}); // blurより先にクリック確定
+      it.addEventListener("click",function(){applyStore(s);});
       list.appendChild(it);
     });
     box.appendChild(list);
   }
   $("storeSearch").addEventListener("input",function(){renderSug($("storeSearch").value.trim());});
+  $("storeSearch").addEventListener("focus",function(){renderSug($("storeSearch").value.trim());});
+  $("storeSearch").addEventListener("blur",function(){setTimeout(function(){$("storeSug").innerHTML="";},200);});
 
   /* ---------- photos + EXIF ---------- */
   var photos=[], photoDate=null;
@@ -579,11 +613,27 @@
     renderPhotos();
     if(!photoDate&&files[0]){
       readExifDate(files[0],function(d){
-        if(d){photoDate=d;if(!$("visit").value.trim()){var _ymd=d.y+"年"+d.mo+"月"+d.d+"日";$("visit").value=_ymd;toast("写真から訪問時期を取得："+_ymd+"（修正可）");}}
+        if(d){
+          photoDate=d;
+          if(!$("visit").value.trim()){var _ymd=d.y+"年"+d.mo+"月"+d.d+"日";$("visit").value=_ymd;toast("写真から訪問時期を取得："+_ymd+"（修正可）");}
+          if(d.h!=null)$("time").value=(d.h>=16||d.h<5)?"夜":"昼"; // 撮影時刻から時間帯を自動
+          autoSituFromDate(d);                                    // 曜日・時刻から訪問シーンを推測
+        }
       });
     }
     e.target.value="";
   });
+  /* 曜日・時刻から訪問シーンの初期値を推測（ユーザー選択があれば尊重） */
+  function autoSituFromDate(d){
+    if(!d||!$("situ")||$("situ").value)return;
+    var wd=-1;try{wd=new Date(d.y,d.mo-1,d.d).getDay();}catch(e){}
+    var h=d.h,g="";
+    if(wd===0||wd===6)g="holiday";          // 土日は休日
+    else if(h>=11&&h<14)g="lunch";          // 平日昼は仕事の合間
+    else if(h>=5&&h<10)g="before";          // 平日朝は仕事前
+    else if(h>=18)g="after";                // 平日夜は仕事終わり
+    $("situ").value=g;                       // 該当なしは""（おまかせ）
+  }
   function renderPhotos(){
     var grid=$("photoGrid");grid.querySelectorAll(".thumb").forEach(function(n){n.remove();});
     var add=grid.querySelector(".photo-add");
@@ -1227,6 +1277,30 @@
   var NEG_REASSURE={soft:["それ以外は大満足でした。","でも全体は文句なしです。","気になったのはそのくらいです。","とはいえ再訪を迷う理由にはなりません。","差し引いても十分におすすめできます。"],
                     casual:["それ以外は大満足。","でも全体は文句なし。","気になったのはそのくらい。","とはいえ再訪を迷う理由にはならない。","差し引いても十分おすすめできる。"]};
   var NEG_LEAD_MID=["ただ、","気になったのは、","惜しいのは、","個人的には、","少しだけ引っかかったのは、","次に期待したいのは、"];
+  /* v3.9.1：訪問シーン（状況）— 切り出しと締めを状況に合わせる。{shop}{loc}{genre} を差し込み */
+  var SITU={
+    after:{open:{soft:["仕事終わりに、{loc}{shop}へ寄りました。","一日の仕事を終えて、{shop}へ。","残業明けのご褒美に、{shop}に立ち寄りました。"],
+                 casual:["仕事終わりに、{loc}{shop}へ寄った。","一日の仕事を終えて、{shop}へ。","残業明けのご褒美に、{shop}に立ち寄った。"]},
+           close:{soft:["明日への活力になりました。","一日の疲れがほどけました。"],casual:["明日への活力になった。","一日の疲れがほどけた。"]}},
+    before:{open:{soft:["仕事前の腹ごしらえに、{loc}{shop}へ。","始業前、{shop}でしっかり食べていくことにしました。","出勤前に、{shop}へ立ち寄りました。"],
+                  casual:["仕事前の腹ごしらえに、{loc}{shop}へ。","始業前、{shop}でしっかり食べていくことに。","出勤前に、{shop}へ立ち寄った。"]},
+            close:{soft:["この後の仕事も頑張れそうです。","いい一日のスタートが切れました。"],casual:["この後の仕事も頑張れそう。","いい一日のスタートが切れた。"]}},
+    lunch:{open:{soft:["仕事の合間のランチに、{loc}{shop}へ。","昼休みを使って、{shop}に足を運びました。","打ち合わせの合間に、{shop}でランチにしました。"],
+                 casual:["仕事の合間のランチに、{loc}{shop}へ。","昼休みを使って、{shop}に足を運んだ。","打ち合わせの合間に、{shop}でランチにした。"]},
+           close:{soft:["午後の仕事も乗り切れそうです。","短い昼休みのいい息抜きになりました。"],casual:["午後の仕事も乗り切れそう。","短い昼休みのいい息抜きになった。"]}},
+    holiday:{open:{soft:["休日のおでかけがてら、{loc}{shop}へ。","予定のない休日に、{shop}を訪ねました。","のんびりした休日、{shop}まで足を延ばしました。"],
+                   casual:["休日のおでかけがてら、{loc}{shop}へ。","予定のない休日に、{shop}を訪ねた。","のんびりした休日、{shop}まで足を延ばした。"]},
+             close:{soft:["いい休日の過ごし方になりました。","休みの日にぴったりの一軒でした。"],casual:["いい休日の過ごし方になった。","休みの日にぴったりの一軒。"]}},
+    trip_work:{open:{soft:["出張の合間に、{loc}{shop}へ。","仕事で訪れた土地で、{shop}に立ち寄りました。","遠征のさなか、地元の{shop}を訪ねました。"],
+                     casual:["出張の合間に、{loc}{shop}へ。","仕事で訪れた土地で、{shop}に立ち寄った。","遠征のさなか、地元の{shop}を訪ねた。"]},
+               close:{soft:["出張の思わぬ収穫になりました。","次に来る機会があれば、また寄りたいです。"],casual:["出張の思わぬ収穫になった。","次に来る機会があれば、また寄りたい。"]}},
+    travel:{open:{soft:["旅行先で、{loc}{shop}へ。","旅の途中、地元で評判の{shop}を訪ねました。","せっかくの旅なので、{shop}へ足を運びました。"],
+                  casual:["旅行先で、{loc}{shop}へ。","旅の途中、地元で評判の{shop}を訪ねた。","せっかくの旅なので、{shop}へ足を運んだ。"]},
+            close:{soft:["旅のいい思い出になりました。","またこの土地を訪れたくなりました。"],casual:["旅のいい思い出になった。","またこの土地を訪れたくなった。"]}},
+    special:{open:{soft:["特別な日の食事に、{loc}{shop}を選びました。","記念日に、前から気になっていた{shop}へ。","少し改まって、{shop}を訪ねました。"],
+                   casual:["特別な日の食事に、{loc}{shop}を選んだ。","記念日に、前から気になっていた{shop}へ。","少し改まって、{shop}を訪ねた。"]},
+             close:{soft:["特別な日にふさわしい時間でした。","記念日の思い出に残る一軒になりました。"],casual:["特別な日にふさわしい時間だった。","記念日の思い出に残る一軒になった。"]}}
+  };
   /* v3.9：名詞句を一文に仕立てる（体言止め／述語化）— 「〜で、〜で、」一辺倒を避ける */
   var NP_SENT={soft:["{np}。","{np}が印象に残ります。","{np}に思わず唸りました。","まず{np}に目を奪われました。","{np}がしっかり伝わってきます。","何より{np}が光っていました。"],
                casual:["{np}。","{np}が印象に残る。","{np}に思わず唸った。","まず{np}に目を奪われた。","{np}がしっかり伝わってくる。","何より{np}が光っていた。"]};
@@ -1320,6 +1394,7 @@
       v:v, reg:v.soft?"soft":"casual",
       shop:$("shop").value.trim()||"このお店", area:$("area").value.trim(),
       genre:$("genre").value, time:$("time").value,
+      situ:($("situ")?$("situ").value:""),
       dishes:dishes, forced:forced, dishMeta:dishMeta,
       scene:picked("scene"), tone:picked("tone"), mood:picked("mood"),
       score:parseFloat($("score").value), budget:$("budget").value,
@@ -1371,18 +1446,24 @@
   function pOpen(ctx){
     var v=ctx.v;
     function S(p,c){return v.soft?p:c;}
-    var intro=[];
-    if(ctx.scene.length)intro.push(rand(ctx.scene)+"、"+ctx.loc+ctx.shop+"へ。");
-    intro.push(ctx.loc+ctx.shop+"に"+(ctx.time==="昼"?"ランチで":"")+S("行ってきました。","行ってきた。"));
-    intro.push((ctx.time==="夜"?"仕事終わりに":"ふらっと")+"、"+ctx.shop+S("に立ち寄りました。","に立ち寄った。"));
-    intro.push(ctx.shop+"、ずっと気になっていたお店。"+(ctx.scene.length?rand(ctx.scene)+S("来ました。","来た。"):""));
-    intro.push((ctx.area?ctx.area+"で":"")+"良さそうな"+ctx.genre+"を見つけたので"+S("入ってみました。","入ってみた。"));
-    intro.push("前から名前だけは聞いていた"+ctx.shop+"に、ようやく"+S("うかがいました。","行けた。"));
-    intro.push(ctx.loc+ctx.shop+"へ。"+(ctx.time==="昼"?"昼の":"夜の")+ctx.genre+"らしい時間を"+S("過ごしてきました。","過ごしてきた。"));
-    intro.push("この日は"+(ctx.scene.length?rand(ctx.scene):"ふらりと")+"、"+ctx.shop+S("を訪ねました。","を訪ねた。"));
-    if(ctx.area)intro.push(ctx.area+"を歩いていて目に留まった"+ctx.genre+"、"+ctx.shop+S("に入ってみました。","に入ってみた。"));
-    if(ctx.high)intro.push("結論から書くと、"+ctx.shop+"は"+S("当たりでした。","当たりだった。"));
-    var s=rand(intro);
+    var s, situ=ctx.situ&&SITU[ctx.situ];
+    if(situ){
+      /* 状況が選ばれていれば、それに合った切り出しを主役にする（時間帯からの決め打ちを回避） */
+      s=fill(er(situ.open,ctx.reg,{last:"",prev:""}),{shop:ctx.shop,loc:ctx.loc,area:ctx.area,genre:ctx.genre});
+    } else {
+      var intro=[];
+      if(ctx.scene.length)intro.push(rand(ctx.scene)+"、"+ctx.loc+ctx.shop+"へ。");
+      intro.push(ctx.loc+ctx.shop+"に"+(ctx.time==="昼"?"ランチで":"")+S("行ってきました。","行ってきた。"));
+      intro.push((ctx.time==="夜"?"仕事終わりに":"ふらっと")+"、"+ctx.shop+S("に立ち寄りました。","に立ち寄った。"));
+      intro.push(ctx.shop+"、ずっと気になっていたお店。"+(ctx.scene.length?rand(ctx.scene)+S("来ました。","来た。"):""));
+      intro.push((ctx.area?ctx.area+"で":"")+"良さそうな"+ctx.genre+"を見つけたので"+S("入ってみました。","入ってみた。"));
+      intro.push("前から名前だけは聞いていた"+ctx.shop+"に、ようやく"+S("うかがいました。","行けた。"));
+      intro.push(ctx.loc+ctx.shop+"へ。"+(ctx.time==="昼"?"昼の":"夜の")+ctx.genre+"らしい時間を"+S("過ごしてきました。","過ごしてきた。"));
+      intro.push("この日は"+(ctx.scene.length?rand(ctx.scene):"ふらりと")+"、"+ctx.shop+S("を訪ねました。","を訪ねた。"));
+      if(ctx.area)intro.push(ctx.area+"を歩いていて目に留まった"+ctx.genre+"、"+ctx.shop+S("に入ってみました。","に入ってみた。"));
+      if(ctx.high)intro.push("結論から書くと、"+ctx.shop+"は"+S("当たりでした。","当たりだった。"));
+      s=rand(intro);
+    }
     if(v.jobLens&&chance(0.4)){
       var lens=[v.jobLens+"目線でも気になっていました。"];
       if(/ライタ|編集|グルメ|料理|シェフ|板前/.test(v.jobLens))lens.push(S("仕事柄、味には少しうるさい方です。","仕事柄、味にはちょっとうるさい。"));
@@ -1391,7 +1472,8 @@
     }
     var scenery="";
     if(ctx.sceneryOn&&chance(0.5)){
-      var pool=(SEASONX[ctx.season]||[]).concat(TIMEX[ctx.time]||[]);
+      /* 状況が選ばれているときは時間帯の情景は使わない（「休日のランチ」等の取り違えを防ぐ） */
+      var pool=(SEASONX[ctx.season]||[]).concat(situ?[]:(TIMEX[ctx.time]||[]));
       /* 時間帯と矛盾する情景（昼の訪問に「夜」など）は落とす。辞書に追加された表現にも効く */
       var bad=(ctx.time==="昼")?/夜|晩/:/昼|午後|ランチ/;
       var okPool=pool.filter(function(x){return !bad.test(x);});
@@ -1492,8 +1574,11 @@
       closer=pre+v.excl+closer;
     }
     var dia=(v.phr.length&&chance(0.6))?rand(v.phr)+"。":"";
+    /* 訪問シーンに応じた締めの一言を、状況が選ばれていれば添える */
+    var situ=ctx.situ&&SITU[ctx.situ];
+    var situLine=(situ&&situ.close&&chance(0.6))?er(situ.close,ctx.reg,{last:"",prev:""}):"";
     /* 予算は必ず独立した一文にする（締め文と直結させると係り受けが崩れるため） */
-    var last=(ctx.budget?fill(er(BUDGET_LINE,ctx.reg,{last:"",prev:""}),{b:ctx.budget}):"")+closer;
+    var last=(ctx.budget?fill(er(BUDGET_LINE,ctx.reg,{last:"",prev:""}),{b:ctx.budget}):"")+situLine+closer;
     return dia?dia+"\n\n"+last:last;
   }
   var partFn={title:pTitle,open:pOpen,mood:pMood,dish:pDish,pos:pPos,neg:pNeg,close:pClose};
@@ -1623,7 +1708,7 @@
   })();
   function buildSampleCtx(genre,dstr){
     var v=buildVoice();setActiveGenre(genre);
-    var ctx={v:v,reg:v.soft?"soft":"casual",shop:"サンプル亭",area:"",genre:genre,time:"夜",
+    var ctx={v:v,reg:v.soft?"soft":"casual",shop:"サンプル亭",area:"",genre:genre,time:"夜",situ:"",
       dishes:splitKW(dstr),forced:[],dishMeta:{},scene:[],tone:[],mood:["落ち着く"],
       score:4.5,budget:"",pos:[],neg:[],visit:"",sceneryOn:false,length:1,season:seasonOf(currentMonth())};
     return ctxFlags(ctx);
