@@ -225,14 +225,33 @@
     --grad-warm:linear-gradient(135deg,var(--accent) 0%,var(--gold) 100%);
     --grad-matcha:linear-gradient(135deg,var(--matcha),#5C8A30);
     --ring:rgba(226,76,59,.16);
+    /* イエベ（黄・ゴールド・黄土・オレンジ）ベースの下地 */
+    --paper:#FBEBCB;
   }
-  /* 食欲をそそる、ほんのり温かいメッシュ背景 */
+  /* イエベ基調の、上品でオシャレなゴールド〜オレンジのメッシュ背景 */
   body{
     background:
-      radial-gradient(1150px 480px at 108% -8%, rgba(242,169,59,.16), transparent 60%),
-      radial-gradient(880px 480px at -14% 2%, rgba(226,76,59,.11), transparent 58%),
-      var(--paper);
+      radial-gradient(1150px 520px at 106% -6%, rgba(245,182,72,.55), transparent 60%),   /* ゴールド（右上） */
+      radial-gradient(940px 520px at -14% 3%, rgba(233,150,58,.42), transparent 60%),      /* オレンジ（左上） */
+      radial-gradient(820px 640px at 50% 116%, rgba(196,142,58,.40), transparent 62%),      /* 黄土色（下） */
+      linear-gradient(180deg,#FDF3D8 0%, #FBE7BE 55%, #F6DCA8 100%);                        /* 黄〜ゴールドの基調 */
     background-attachment:fixed;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) body{
+      background:
+        radial-gradient(1100px 520px at 106% -6%, rgba(214,150,56,.22), transparent 60%),
+        radial-gradient(900px 520px at -14% 3%, rgba(190,110,45,.18), transparent 60%),
+        radial-gradient(800px 640px at 50% 116%, rgba(150,110,50,.16), transparent 62%),
+        var(--paper);
+    }
+  }
+  :root[data-theme="dark"] body{
+    background:
+      radial-gradient(1100px 520px at 106% -6%, rgba(214,150,56,.22), transparent 60%),
+      radial-gradient(900px 520px at -14% 3%, rgba(190,110,45,.18), transparent 60%),
+      radial-gradient(800px 640px at 50% 116%, rgba(150,110,50,.16), transparent 62%),
+      var(--paper);
   }
   /* ヒーロー見出し */
   header.app{padding-top:34px;}
@@ -285,7 +304,7 @@
     <h1 class="brand">サッと食レポ<span class="dot">.</span></h1>
     <div class="garnish" aria-hidden="true"><span>🍜</span><span>🍣</span><span>🍕</span><span>🍖</span><span>🍰</span><span>🍺</span></div>
     <p class="tagline">その場で30秒メモ → 食べログ用の文章に。<br>文をつなげて、なめらかで自然な口コミに。</p>
-    <span class="ver" id="verBadge">v3.11.0 ・ 辞書 2026.12</span>
+    <span class="ver" id="verBadge">v3.11.1 ・ 辞書 2026.12</span>
   </header>
 
   <!-- PERSONA -->
@@ -578,7 +597,7 @@
 <script>
 (function(){
   "use strict";
-  var APP_VER="3.11.0", LEX_VER="2026.12", SCHEMA=3;
+  var APP_VER="3.11.1", LEX_VER="2026.12", SCHEMA=3;
   var $=function(id){return document.getElementById(id);};
   function rand(a){return a[Math.floor(Math.random()*a.length)];}
   function chance(p){return Math.random()<p;}
