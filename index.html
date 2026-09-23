@@ -193,7 +193,7 @@
   <header class="app">
     <h1 class="brand">サッと食レポ<span class="dot">.</span></h1>
     <p class="tagline">その場で30秒メモ → 食べログ用の文章に。<br>文をつなげて、なめらかで自然な口コミに。</p>
-    <span class="ver" id="verBadge">v3.9.4 ・ 辞書 2026.11</span>
+    <span class="ver" id="verBadge">v3.9.5 ・ 辞書 2026.11</span>
   </header>
 
   <!-- PERSONA -->
@@ -251,7 +251,7 @@
 
   <!-- STEP 1 -->
   <section class="card">
-    <h2 class="step-label"><span class="step-num">1</span>その場でサッと記録</h2>
+    <h2 class="step-label"><span class="step-num">1</span>その場でサッと記録<span class="spacer"></span><button class="theme-btn" id="resetBtn" type="button">🔄 入力をリセット</button></h2>
     <label class="field"><span class="field-name">🏪 お店を選ぶ（履歴・サンプルから）</span>
       <input type="text" id="storeSearch" placeholder="お店の名前を入力（過去に保存したお店が候補に出ます）" autocomplete="off">
       <div id="storeSug"></div>
@@ -472,7 +472,7 @@
 <script>
 (function(){
   "use strict";
-  var APP_VER="3.9.4", LEX_VER="2026.11", SCHEMA=3;
+  var APP_VER="3.9.5", LEX_VER="2026.11", SCHEMA=3;
   var $=function(id){return document.getElementById(id);};
   function rand(a){return a[Math.floor(Math.random()*a.length)];}
   function chance(p){return Math.random()<p;}
@@ -662,17 +662,23 @@
     }).catch(function(){cb(null);});
   }
   var MUTED='style="color:var(--muted);font-size:11.5px"';
+  /* Googleマップへのディープリンク（APIキー不要・無料）。座標でGoogleの高精度地図を直接開く */
+  function gmapLinks(lat,lon){
+    var near="https://www.google.com/maps/search/"+encodeURIComponent("飲食店")+"/@"+lat+","+lon+",18z";
+    var pt="https://www.google.com/maps?q="+lat+","+lon;
+    return '<a href="'+near+'" target="_blank" rel="noopener">🗺 Googleマップで近くの店</a> ／ '+
+           '<a href="'+pt+'" target="_blank" rel="noopener">📍 この地点</a>';
+  }
   var lastGeo=null; // 直近に取得した撮影地点（近傍検索の起点）
   function setNearVisible(on){var w=$("nearWrap");if(w)w.hidden=!on;if(!on){var ns=$("nearSug");if(ns)ns.innerHTML="";}}
   function showGeoFromPhoto(gps){
     var box=$("geoOut");if(!box)return;
     lastGeo={lat:gps.lat,lon:gps.lon};
     var coord=gps.lat.toFixed(5)+", "+gps.lon.toFixed(5);
-    var mapUrl="https://www.openstreetmap.org/?mlat="+gps.lat+"&mlon="+gps.lon+"#map=18/"+gps.lat+"/"+gps.lon;
-    var mapLink='<a href="'+mapUrl+'" target="_blank" rel="noopener">地図で開く</a>';
+    var mapLink=gmapLinks(gps.lat,gps.lon);
     box.hidden=false;
     if($("pGeo")&&!$("pGeo").checked){ // 位置情報の外部利用オフ：座標だけ表示（送信なし）
-      box.innerHTML='📍 <b>撮影場所の座標</b>：'+esc(coord)+' ／ '+mapLink+'<br><span '+MUTED+'>住所への変換・近隣検索はオフです（人物設定で切替）。</span>';
+      box.innerHTML='📍 <b>撮影場所の座標</b>：'+esc(coord)+'<br>'+mapLink+'<br><span '+MUTED+'>住所への変換・近隣検索はオフです（人物設定で切替）。</span>';
       setNearVisible(false);
       return;
     }
@@ -682,12 +688,13 @@
       if(a&&a.text){
         box.innerHTML='📍 <b>撮影場所（写真の位置情報）</b><br>'+esc(a.text)+
           ' <button class="tog" id="copyAddr" type="button">📋 住所をコピー</button>'+
-          '<br><span '+MUTED+'>'+esc(coord)+' ／ '+mapLink+'</span>'+
-          '<br><span '+MUTED+'>下のボタンで近くのお店を候補にできます。</span>';
+          '<br>'+mapLink+
+          '<br><span '+MUTED+'>'+esc(coord)+'</span>'+
+          '<br><span '+MUTED+'>下の「近くのお店を候補に出す」か、Googleマップでこの地点の店を特定できます。</span>';
         if(a.area&&!$("area").value.trim())$("area").value=a.area; // エリア欄が空なら補完（文章にも反映）
         var ca=$("copyAddr");if(ca)ca.addEventListener("click",function(){copyText(a.text);});
       }else{
-        box.innerHTML='📍 <b>撮影場所の座標</b>：'+esc(coord)+' ／ '+mapLink+'<br><span '+MUTED+'>住所は取得できませんでした（通信環境をご確認ください）。</span>';
+        box.innerHTML='📍 <b>撮影場所の座標</b>：'+esc(coord)+'<br>'+mapLink+'<br><span '+MUTED+'>住所は取得できませんでした（通信環境をご確認ください）。</span>';
       }
     });
   }
@@ -1820,6 +1827,39 @@
     $("copyBtn2").addEventListener("click",function(){copyText(title+"\n\n"+body);});
   }
   $("genBtn").addEventListener("click",function(){var ctx=ctxFlags(buildCtx());renderOutput({parts:genAll(ctx),meta:buildMeta(ctx),order:partOrder()});});
+
+  /* ---------- 入力のリセット（STEP1の入力内容だけを初期化。人物設定・下書き・辞書は消さない） ---------- */
+  function resetEntry(){
+    ["shop","area","dishes","posMemo","negMemo","visit","storeSearch"].forEach(function(id){if($(id))$(id).value="";});
+    if($("budget"))$("budget").value="";
+    if($("time"))$("time").value="夜";
+    if($("situ"))$("situ").value="";
+    if($("genre"))$("genre").selectedIndex=0;
+    $("score").value="3.5";$("scoreVal").textContent="3.5";$("stars").textContent=stars(3.5);
+    ["scene","tone","mood"].forEach(function(box){
+      Array.prototype.slice.call($(box).querySelectorAll('[aria-pressed="true"]')).forEach(function(b){b.setAttribute("aria-pressed","false");});
+    });
+    dishMeta={};renderDishRows();
+    photos=[];photoDate=null;lastGeo=null;renderPhotos();
+    var g=$("geoOut");if(g){g.hidden=true;g.innerHTML="";}
+    setNearVisible(false);
+    if($("storeSug"))$("storeSug").innerHTML="";
+    $("output").innerHTML="";
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+  (function(){
+    var armed=false,timer;
+    var btn=$("resetBtn");if(!btn)return;
+    btn.addEventListener("click",function(){
+      if(!armed){ // 誤操作防止：1回目は確認状態にする
+        armed=true;btn.textContent="⚠ もう一度でリセット";
+        clearTimeout(timer);timer=setTimeout(function(){armed=false;btn.textContent="🔄 入力をリセット";},3000);
+        return;
+      }
+      clearTimeout(timer);armed=false;btn.textContent="🔄 入力をリセット";
+      resetEntry();toast("入力をリセットしました");
+    });
+  })();
 
   /* ---------- clipboard ---------- */
   function copyText(text){
