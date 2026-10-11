@@ -1,0 +1,17 @@
+{
+  "name": "サッと食レポ Pro（ChatGPT版）",
+  "short_name": "食レポPro",
+  "description": "外食のサッとした箇条書きメモから、ChatGPTで口コミを書かせるためのプロンプトを作る補助アプリ。",
+  "lang": "ja",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FBE7B8",
+  "theme_color": "#E24C3B",
+  "icons": [
+    { "src": "../icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "../icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "../icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

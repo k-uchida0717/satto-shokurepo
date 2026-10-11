@@ -1,7 +1,7 @@
 /* サッと食レポ サービスワーカー
    ページ本体はネットワーク優先（更新を確実に反映）＋オフライン時キャッシュ。
    アイコン等の静的資産はキャッシュ優先。 */
-var CACHE = "satto-v2";
+var CACHE = "satto-v3";
 var ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", function (e) {
@@ -33,10 +33,11 @@ self.addEventListener("fetch", function (e) {
     e.respondWith(
       fetch(req).then(function (res) {
         var copy = res.clone();
-        caches.open(CACHE).then(function (c) { c.put("./index.html", copy); }).catch(function () {});
+        /* リクエストURLで保持（/v2/ などサブパスのページとキャッシュが混ざらないように） */
+        caches.open(CACHE).then(function (c) { c.put(req, copy); }).catch(function () {});
         return res;
       }).catch(function () {
-        return caches.match("./index.html").then(function (c) { return c || caches.match("./"); });
+        return caches.match(req).then(function (c) { return c || caches.match("./index.html") || caches.match("./"); });
       })
     );
   } else {
