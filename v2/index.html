@@ -140,44 +140,51 @@
 
   /* ===================== CAFE CINNAMON 風ビジュアル（ヴィンテージ・カフェ） ===================== */
   :root{ --ring:rgba(242,133,0,.22); }
-  /* クリーム地に、上部のセピア・ビネット（ヒーロー写真の名残）とオレンジの控えめな差し色 */
+  /* アプリ全体の背景＝CAFE CINNAMON のブランド・ネイビー（4枚目の色味） */
   body{
     background:
-      radial-gradient(1200px 360px at 50% -6%, rgba(128,90,65,.16), transparent 64%),
-      radial-gradient(900px 500px at 112% 4%, rgba(242,133,0,.07), transparent 60%),
-      radial-gradient(760px 520px at -8% 100%, rgba(128,90,65,.07), transparent 60%),
-      var(--paper);
+      radial-gradient(1100px 520px at 50% -4%, #2E336A, transparent 60%),
+      linear-gradient(180deg,#262B56 0%, #20244C 58%, #1A1D40 100%);
     background-attachment:fixed;
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]) body{
       background:
-        radial-gradient(1200px 360px at 50% -6%, rgba(255,154,46,.10), transparent 64%),
-        radial-gradient(760px 520px at 108% 2%, rgba(185,138,102,.10), transparent 60%),
-        var(--paper);
+        radial-gradient(1100px 520px at 50% -4%, #23274f, transparent 60%),
+        linear-gradient(180deg,#1C1F3E 0%, #16193200 0%, #15172F 100%),
+        #171A33;
     }
   }
   :root[data-theme="dark"] body{
     background:
-      radial-gradient(1200px 360px at 50% -6%, rgba(255,154,46,.10), transparent 64%),
-      radial-gradient(760px 520px at 108% 2%, rgba(185,138,102,.10), transparent 60%),
-      var(--paper);
+      radial-gradient(1100px 520px at 50% -4%, #23274f, transparent 60%),
+      linear-gradient(180deg,#1C1F3E 0%, #15172F 100%);
+    background-attachment:fixed;
   }
-  /* ヒーロー：中央にヴィンテージ円形エンブレム */
-  header.app{padding-top:30px;}
-  header.app::before{height:200px;background:radial-gradient(120% 100% at 50% 0%, rgba(128,90,65,.16) 0%, transparent 70%);opacity:1;}
-  .emblem{display:flex;justify-content:center;margin:2px auto 2px;}
-  .emblem svg{width:220px;height:220px;max-width:70vw;filter:drop-shadow(0 6px 14px var(--shadow));}
-  .emblem .st-ring{fill:none;stroke:var(--ink);}
-  .emblem .st-txt{fill:var(--ink);font-family:"Arvo",serif;}
+  /* ヒーロー：店舗写真を背景にヴィンテージ・エンブレム（文字は視認性重視でクリーム） */
+  header.app{padding:0;margin:4px 0 18px;}
+  header.app::before{display:none;}
+  .hero-photo{position:relative;border-radius:16px;overflow:hidden;padding:24px 16px 20px;text-align:center;
+    background-image:linear-gradient(180deg, rgba(14,16,34,.46) 0%, rgba(14,16,34,.66) 100%), url("hero.webp");
+    background-size:cover;background-position:center 60%;
+    border:1px solid rgba(255,255,255,.14);box-shadow:0 16px 36px -18px rgba(0,0,0,.7);}
+  .emblem{display:flex;justify-content:center;margin:0 auto;}
+  .emblem svg{width:210px;height:210px;max-width:66vw;filter:drop-shadow(0 4px 10px rgba(0,0,0,.6));}
+  .emblem .st-ring{fill:none;stroke:#F6ECD9;}
+  .emblem .st-txt{fill:#F6ECD9;font-family:"Arvo",serif;}
+  .emblem .st-script{fill:#F6ECD9;font-family:"Yellowtail",cursive;}
+  .emblem .st-line{stroke:#F6ECD9;stroke-width:1.4;fill:none;}
+  .emblem .st-blade{fill:#F6ECD9;}
   .emblem .st-accent{fill:var(--accent);}
-  .emblem .st-script{fill:var(--ink);font-family:"Yellowtail",cursive;}
-  .emblem .st-line{stroke:var(--ink);stroke-width:1.4;fill:none;}
-  .tagline{font-size:13px;margin-top:6px;color:var(--brown);}
-  .switch-link{color:var(--navy);border-color:var(--hair-strong);}
+  .hero-photo .tagline{font-size:13px;margin:8px 0 0;color:#F4EADA;text-shadow:0 1px 5px rgba(0,0,0,.6);}
+  .hero-foot{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:12px;}
+  .switch-link{color:var(--navy);border-color:var(--hair-strong);background:var(--surface);}
   .switch-link:hover{border-color:var(--accent);color:var(--accent-ink);}
-  .ver{background:var(--surface);border-color:var(--hair-strong);box-shadow:0 1px 4px var(--shadow);font-weight:700;
+  .ver{background:var(--surface);border-color:var(--hair-strong);box-shadow:0 2px 6px rgba(0,0,0,.35);font-weight:700;
     text-transform:uppercase;letter-spacing:.08em;color:var(--brown);}
+  /* ネイビー地で読めるツールバー（テーマ切替） */
+  .toolbar .theme-btn{color:#E8E0D2;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.07);}
+  .toolbar .theme-btn:hover{border-color:var(--accent);color:#fff;}
   /* カード：クリーム地＋セピアの“二重フレーム”でヴィンテージに */
   .card{border-radius:14px;position:relative;border:1px solid var(--hair-strong);
     box-shadow:0 12px 26px -20px var(--shadow),0 2px 5px -3px var(--shadow);}
@@ -235,8 +242,9 @@
 <div class="wrap">
   <div class="toolbar"><button class="theme-btn" id="themeBtn" type="button">◐ 表示切替</button></div>
   <header class="app">
+   <div class="hero-photo">
     <div class="emblem">
-      <svg viewBox="0 0 200 200" role="img" aria-label="サッと食レポ Pro">
+      <svg viewBox="0 0 200 200" role="img" aria-label="KOH Gourmet 食レポ">
         <defs>
           <path id="arcTop" fill="none" d="M100,100 m-73,0 a73,73 0 0 1 146,0"/>
           <path id="arcBot" fill="none" d="M100,100 m71,0 a71,71 0 0 1 -142,0"/>
@@ -246,14 +254,14 @@
         <text class="st-txt" font-size="11.5" letter-spacing="2.6" text-anchor="middle" font-weight="700">
           <textPath href="#arcTop" startOffset="50%">HAVE A GOOD REVIEW</textPath>
         </text>
-        <text class="st-txt" font-size="9" letter-spacing="2.2" text-anchor="middle">
-          <textPath href="#arcBot" startOffset="50%">PRODUCED WITH CHATGPT</textPath>
+        <text class="st-txt" font-size="8.6" letter-spacing="2" text-anchor="middle">
+          <textPath href="#arcBot" startOffset="50%">PRODUCED BY KOHGOURMET</textPath>
         </text>
-        <text class="st-txt" x="100" y="70" font-size="13" letter-spacing="5" text-anchor="middle" font-weight="700">SATTO</text>
+        <text class="st-txt" x="100" y="70" font-size="14" letter-spacing="6" text-anchor="middle" font-weight="700">KOH</text>
         <text class="st-script" x="100" y="118" font-size="42" text-anchor="middle">Shokurepo</text>
         <g class="st-line" stroke-linecap="round">
           <line x1="89" y1="150" x2="108" y2="129"/>
-          <path d="M106,127 l5,-4 l-1,6 Z" fill="var(--ink)" stroke="none"/>
+          <path class="st-blade" d="M106,127 l5,-4 l-1,6 Z" stroke="none"/>
           <line x1="111" y1="150" x2="92" y2="129"/>
           <line x1="90" y1="127" x2="92.5" y2="130"/>
           <line x1="94" y1="125" x2="94.5" y2="130"/>
@@ -264,8 +272,11 @@
       </svg>
     </div>
     <p class="tagline">箇条書きでサッとメモ → ChatGPT用の“最強プロンプト”に。</p>
+   </div>
+   <div class="hero-foot">
     <a class="switch-link" href="../">✍ 文章も自動生成する通常版はこちら</a>
-    <div><span class="ver" id="verBadge">v2.1.0 ・ CINNAMON EDITION</span></div>
+    <div><span class="ver" id="verBadge">V2.2.0 ・ KOH GOURMET EDITION</span></div>
+   </div>
   </header>
 
   <!-- PERSONA -->
@@ -401,7 +412,7 @@
 <script>
 (function(){
   "use strict";
-  var APP_VER="2.1.0";
+  var APP_VER="2.2.0";
   var $=function(id){return document.getElementById(id);};
   function esc(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
   function splitLines(s){return String(s||"").split(/\r?\n/).map(function(x){return x.replace(/^[\s・*\-–—•]+/,"").trim();}).filter(Boolean);}

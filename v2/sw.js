@@ -1,8 +1,8 @@
 /* サッと食レポ Pro（v2）サービスワーカー
    スコープは /v2/ 配下のみ。ページはネットワーク優先＋オフライン時キャッシュ、
    静的資産はキャッシュ優先。キャッシュはリクエストURLで保持（パス混線を防ぐ）。 */
-var CACHE = "satto-v2app-1";
-var ASSETS = ["./", "./index.html", "./manifest.webmanifest", "../icon-192.png", "../icon-512.png"];
+var CACHE = "satto-v2app-2";
+var ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./hero.webp", "../icon-192.png", "../icon-512.png"];
 
 self.addEventListener("install", function (e) {
   e.waitUntil(
