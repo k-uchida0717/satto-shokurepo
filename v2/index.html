@@ -16,6 +16,17 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="食レポPro">
 <link rel="apple-touch-icon" href="../icon-192.png">
+<!-- LINE/SNSプレビュー（OGP） -->
+<meta name="description" content="外食のメモを箇条書きで入れるだけ。ChatGPT用プロンプトを作って、自然な食べログ口コミを3パターン。写真から日時・場所も自動取得。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="KOH 食レポ">
+<meta property="og:title" content="KOH 食レポ ｜ 箇条書き → ChatGPTで“本物の口コミ”">
+<meta property="og:description" content="外食のメモを箇条書きで入れるだけ。ChatGPT用プロンプトを作って、自然な食べログ口コミを3パターン。写真から日時・場所も自動取得。">
+<meta property="og:image" content="https://k-uchida0717.github.io/satto-shokurepo/v2/ogp.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://k-uchida0717.github.io/satto-shokurepo/v2/">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   /* CAFE CINNAMON 風：クリーム×ネイビー×セピア茶×オレンジ×インディゴ徽章 */
   :root{
@@ -237,10 +248,35 @@
   .reco-box .hint b{color:#FFCB7A;}
   .reco-box .btn-reco{background:var(--accent);box-shadow:0 8px 20px -8px rgba(0,0,0,.5);}
   .reco-box .btn-reco:hover{filter:brightness(1.08);}
+
+  /* ===== 使い方ヘルプ（初回オンボーディング＋❓ボタン） ===== */
+  .help-ov{position:fixed;inset:0;background:rgba(10,12,24,.62);z-index:100;display:flex;align-items:flex-end;justify-content:center;}
+  .help-ov[hidden]{display:none;}
+  .help-modal{background:var(--surface);color:var(--ink);width:100%;max-width:560px;max-height:90vh;overflow:auto;
+    border-radius:18px 18px 0 0;padding:22px 18px calc(20px + env(safe-area-inset-bottom,0px));position:relative;
+    box-shadow:0 -12px 44px rgba(0,0,0,.45);border:1px solid var(--hair-strong);border-bottom:none;}
+  @media(min-width:480px){.help-ov{align-items:center;padding:16px;}.help-modal{border-radius:18px;border-bottom:1px solid var(--hair-strong);}}
+  .help-x{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;border:1px solid var(--hair-strong);
+    background:var(--surface-2);color:var(--muted);font-size:18px;cursor:pointer;line-height:1;}
+  .help-x:hover{color:var(--accent);border-color:var(--accent);}
+  .help-h{font-family:"Arvo","Shippori Mincho B1",serif;font-size:19px;margin:0 6px 4px 0;color:var(--ink);}
+  .help-sub{font-size:12.5px;color:var(--muted);margin:0 0 16px;}
+  .help-steps{margin:0 0 4px;padding:0;list-style:none;counter-reset:hs;}
+  .help-steps li{position:relative;padding:0 0 14px 42px;counter-increment:hs;}
+  .help-steps li::before{content:counter(hs);position:absolute;left:0;top:1px;width:28px;height:28px;border-radius:50%;
+    background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700;font-family:"Arvo",serif;font-size:14px;}
+  .help-steps b{display:block;font-size:14.5px;margin-bottom:2px;}
+  .help-steps span{font-size:13px;color:var(--muted);line-height:1.6;}
+  .help-faq{border-top:1px solid var(--hair);padding-top:14px;margin:8px 0 16px;}
+  .help-faq .ft{font-family:"Arvo","Shippori Mincho B1",serif;font-weight:700;font-size:14px;margin-bottom:8px;color:var(--brown);}
+  .help-q{font-weight:700;font-size:13.5px;margin-top:11px;}
+  .help-q::before{content:"Q. ";color:var(--accent);}
+  .help-a{font-size:13px;color:var(--muted);line-height:1.6;margin-top:2px;}
+  .help-note{font-size:11.5px;color:var(--muted);background:var(--surface-2);border-radius:10px;padding:10px 12px;margin-bottom:14px;line-height:1.6;}
 </style>
 
 <div class="wrap">
-  <div class="toolbar"><button class="theme-btn" id="themeBtn" type="button">◐ 表示切替</button></div>
+  <div class="toolbar" style="gap:8px"><button class="theme-btn" id="helpBtn" type="button">❓ 使い方</button><button class="theme-btn" id="themeBtn" type="button">◐ 表示切替</button></div>
   <header class="app">
    <div class="hero-photo">
     <div class="emblem">
@@ -408,6 +444,34 @@
   </section>
 </div>
 <div class="toast" id="toast"></div>
+
+<!-- 使い方ヘルプ -->
+<div class="help-ov" id="helpOv" hidden>
+  <div class="help-modal" role="dialog" aria-modal="true" aria-label="使い方">
+    <button class="help-x" id="helpX" type="button" aria-label="閉じる">×</button>
+    <h2 class="help-h">❓ 使い方（かんたん4ステップ）</h2>
+    <p class="help-sub">外食のメモ → ChatGPTで“本物らしい口コミ”を作るアプリです。</p>
+    <ol class="help-steps">
+      <li><b>📷 写真を選ぶ（任意）</b><span>料理やお店の写真を選ぶと、撮影した「日時」「場所の住所」「近くのお店」を自動で拾います。手入力だけでもOK。</span></li>
+      <li><b>🏪 お店・日時などをサッと入力</b><span>店名・エリア・ジャンル・予算・同行者などを選ぶだけ。写真を入れた場合は多くが自動で埋まります。</span></li>
+      <li><b>📝「今回の飲食の概要」に箇条書き</b><span>味・料理の印象・お店の雰囲気・良かった点・気になった点・立地など、思いつくままに「・」で箇条書き。ここが主役です。</span></li>
+      <li><b>🤖「ChatGPT用のプロンプトを作る」</b><span>ボタンを押す → 出てきた文章を「コピー」 → ChatGPT（無料でもOK）に貼り付け。雰囲気の違う口コミが3パターン返ってきます。気に入ったものを食べログに貼れば完成。</span></li>
+    </ol>
+    <div class="help-faq">
+      <div class="ft">よくある質問</div>
+      <div class="help-q">ChatGPTって何？お金かかる？</div>
+      <div class="help-a">AIと会話できる無料サービスです（chatgpt.com）。無料の範囲で使えます。このアプリで作った文章を貼り付けるだけ。</div>
+      <div class="help-q">このアプリがAIで文章を書くの？</div>
+      <div class="help-a">いいえ。アプリは“指示書（プロンプト）”を作るだけで、文章づくりはChatGPT側です。だから無料・オフラインでも動きます。</div>
+      <div class="help-q">食べログに自動で投稿される？</div>
+      <div class="help-a">されません。できた文章は自分でコピーして貼り付けてください（食べログは自動投稿が規約で禁止のため）。</div>
+      <div class="help-q">位置情報は送られる？</div>
+      <div class="help-a">「住所表示」をONにしたときだけ、写真の座標を地図サービス(OpenStreetMap)に送って住所に変換します。人物設定でOFFにできます。</div>
+    </div>
+    <div class="help-note">💡 ホーム画面に追加すると、アプリのように起動できてオフラインでも使えます（ブラウザのメニュー →「ホーム画面に追加」）。入力内容はこの端末に自動保存されます。</div>
+    <button class="btn btn-primary" id="helpClose" type="button">はじめる</button>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -828,6 +892,17 @@
     var t=$("gptOut").value;if(!t){toast("先にプロンプトを作成してください");return;}
     copyText(t);toast("コピーしました。ChatGPTに貼り付けてください");
   });
+
+  /* ---------- 使い方ヘルプ ---------- */
+  var HKEY="satto_v2_help_seen";
+  function openHelp(){var o=$("helpOv");if(o){o.hidden=false;}}
+  function closeHelp(){var o=$("helpOv");if(o)o.hidden=true;try{localStorage.setItem(HKEY,"1");}catch(e){}}
+  if($("helpBtn"))$("helpBtn").addEventListener("click",openHelp);
+  if($("helpX"))$("helpX").addEventListener("click",closeHelp);
+  if($("helpClose"))$("helpClose").addEventListener("click",closeHelp);
+  if($("helpOv"))$("helpOv").addEventListener("click",function(e){if(e.target===$("helpOv"))closeHelp();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"&&$("helpOv")&&!$("helpOv").hidden)closeHelp();});
+  try{if(!localStorage.getItem(HKEY))setTimeout(openHelp,450);}catch(e){}
 
   /* ---------- init ---------- */
   loadPersona();updateBadge();loadForm();

@@ -16,6 +16,17 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="食レポ">
 <link rel="apple-touch-icon" href="icon-192.png">
+<!-- LINE/SNSプレビュー（OGP） -->
+<meta name="description" content="外食のサッとしたメモから、食べログ用の口コミ文を自動生成（生成AI不使用・オフライン対応）。写真から日時・場所も自動取得。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="サッと食レポ">
+<meta property="og:title" content="サッと食レポ ｜ メモから食べログ用の文章を自動作成">
+<meta property="og:description" content="外食のサッとしたメモから、食べログ用の口コミ文を自動生成（生成AI不使用・オフライン対応）。写真から日時・場所も自動取得。">
+<meta property="og:image" content="https://k-uchida0717.github.io/satto-shokurepo/ogp.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://k-uchida0717.github.io/satto-shokurepo/">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   :root{
     --paper:#FFF6EC; --surface:#FFFFFF; --surface-2:#FDECDD;
@@ -319,10 +330,35 @@
   .reco-box .hint b{color:#FFDFA0;}
   .reco-box .btn-reco{background:linear-gradient(135deg,#5FB56C,#2F7A3E);box-shadow:0 8px 20px -8px rgba(0,0,0,.5);}
   .reco-box .btn-reco:hover{filter:brightness(1.08);}
+
+  /* ===== 使い方ヘルプ（初回オンボーディング＋❓ボタン） ===== */
+  .help-ov{position:fixed;inset:0;background:rgba(40,24,12,.55);z-index:100;display:flex;align-items:flex-end;justify-content:center;}
+  .help-ov[hidden]{display:none;}
+  .help-modal{background:var(--surface);color:var(--ink);width:100%;max-width:560px;max-height:90vh;overflow:auto;
+    border-radius:18px 18px 0 0;padding:22px 18px calc(20px + env(safe-area-inset-bottom,0px));position:relative;
+    box-shadow:0 -12px 44px rgba(0,0,0,.35);border:1px solid var(--hair-strong);border-bottom:none;}
+  @media(min-width:480px){.help-ov{align-items:center;padding:16px;}.help-modal{border-radius:18px;border-bottom:1px solid var(--hair-strong);}}
+  .help-x{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;border:1px solid var(--hair-strong);
+    background:var(--surface-2);color:var(--muted);font-size:18px;cursor:pointer;line-height:1;}
+  .help-x:hover{color:var(--accent);border-color:var(--accent);}
+  .help-h{font-family:"Shippori Mincho B1",serif;font-size:19px;margin:0 6px 4px 0;color:var(--ink);}
+  .help-sub{font-size:12.5px;color:var(--muted);margin:0 0 16px;}
+  .help-steps{margin:0 0 4px;padding:0;list-style:none;counter-reset:hs;}
+  .help-steps li{position:relative;padding:0 0 14px 42px;counter-increment:hs;}
+  .help-steps li::before{content:counter(hs);position:absolute;left:0;top:1px;width:28px;height:28px;border-radius:50%;
+    background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px;}
+  .help-steps b{display:block;font-size:14.5px;margin-bottom:2px;}
+  .help-steps span{font-size:13px;color:var(--muted);line-height:1.6;}
+  .help-faq{border-top:1px solid var(--hair);padding-top:14px;margin:8px 0 16px;}
+  .help-faq .ft{font-family:"Shippori Mincho B1",serif;font-weight:700;font-size:14px;margin-bottom:8px;color:var(--accent-ink);}
+  .help-q{font-weight:700;font-size:13.5px;margin-top:11px;}
+  .help-q::before{content:"Q. ";color:var(--accent);}
+  .help-a{font-size:13px;color:var(--muted);line-height:1.6;margin-top:2px;}
+  .help-note{font-size:11.5px;color:var(--muted);background:var(--surface-2);border-radius:10px;padding:10px 12px;margin-bottom:14px;line-height:1.6;}
 </style>
 
 <div class="wrap">
-  <div class="toolbar"><button class="theme-btn" id="themeBtn" type="button">◐ 表示切替</button></div>
+  <div class="toolbar" style="gap:8px"><button class="theme-btn" id="helpBtn" type="button">❓ 使い方</button><button class="theme-btn" id="themeBtn" type="button">◐ 表示切替</button></div>
   <header class="app">
     <h1 class="brand">サッと食レポ<span class="dot">.</span></h1>
     <div class="garnish" aria-hidden="true"><span>🍜</span><span>🍣</span><span>🍕</span><span>🍖</span><span>🍰</span><span>🍺</span></div>
@@ -618,6 +654,34 @@
 </div>
 <div class="toast" id="toast"></div>
 
+<!-- 使い方ヘルプ -->
+<div class="help-ov" id="helpOv" hidden>
+  <div class="help-modal" role="dialog" aria-modal="true" aria-label="使い方">
+    <button class="help-x" id="helpX" type="button" aria-label="閉じる">×</button>
+    <h2 class="help-h">❓ 使い方（かんたん4ステップ）</h2>
+    <p class="help-sub">外食のサッとしたメモから、食べログ用の口コミ文をその場で作れます。</p>
+    <ol class="help-steps">
+      <li><b>📷 写真を選ぶ（任意）</b><span>料理やお店の写真を選ぶと、撮影した「日時」「場所の住所」「近くのお店」を自動で拾います。手入力だけでもOK。</span></li>
+      <li><b>🏪 お店・料理・タグをサッと入力</b><span>店名・エリア・ジャンル・食べたもの・味や雰囲気のタグ・予算などを選ぶだけ。</span></li>
+      <li><b>📝「今回の飲食の概要」や良かった点を入力</b><span>ひとことメモや箇条書きでOK。概要に書くと冒頭から主役として文章に織り込みます。</span></li>
+      <li><b>✍️「食べログ用の文章をつくる」</b><span>ボタンを押すと口コミ文が完成。🔄で何度でも作り直し、部分だけの再生成も可能。「全文コピー」して食べログに貼れば完成です。</span></li>
+    </ol>
+    <div class="help-faq">
+      <div class="ft">よくある質問</div>
+      <div class="help-q">生成AIを使っているの？</div>
+      <div class="help-a">いいえ。すべて端末内の辞書と組み立てロジックで作るので、無料・オフラインでも動きます。</div>
+      <div class="help-q">食べログに自動で投稿される？</div>
+      <div class="help-a">されません。できた文章は「全文コピー」して自分で貼り付けてください（食べログは自動投稿が規約で禁止のため）。</div>
+      <div class="help-q">もっと凝った文章にしたい</div>
+      <div class="help-a">画面下の「🤖 ChatGPT用のプロンプトを作る」か、箇条書き特化の「KOH版（v2）」もお試しを（ヘッダーのリンクから行けます）。</div>
+      <div class="help-q">位置情報は送られる？</div>
+      <div class="help-a">「住所表示」をONにしたときだけ、写真の座標を地図サービス(OpenStreetMap)に送って住所に変換します。人物設定でOFFにできます。</div>
+    </div>
+    <div class="help-note">💡 ホーム画面に追加すると、アプリのように起動できてオフラインでも使えます（ブラウザのメニュー →「ホーム画面に追加」）。下書き・人物設定・辞書はこの端末に保存されます。</div>
+    <button class="btn btn-primary" id="helpClose" type="button">はじめる</button>
+  </div>
+</div>
+
 <script>
 (function(){
   "use strict";
@@ -648,6 +712,17 @@
     var dark=cur?cur==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;
     root.setAttribute("data-theme",dark?"light":"dark");
   });
+
+  /* ---------- 使い方ヘルプ ---------- */
+  var HKEY="satto_v1_help_seen";
+  function openHelp(){var o=$("helpOv");if(o)o.hidden=false;}
+  function closeHelp(){var o=$("helpOv");if(o)o.hidden=true;try{localStorage.setItem(HKEY,"1");}catch(e){}}
+  if($("helpBtn"))$("helpBtn").addEventListener("click",openHelp);
+  if($("helpX"))$("helpX").addEventListener("click",closeHelp);
+  if($("helpClose"))$("helpClose").addEventListener("click",closeHelp);
+  if($("helpOv"))$("helpOv").addEventListener("click",function(e){if(e.target===$("helpOv"))closeHelp();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"&&$("helpOv")&&!$("helpOv").hidden)closeHelp();});
+  try{if(!localStorage.getItem(HKEY))setTimeout(openHelp,450);}catch(e){}
 
   /* ---------- chips ---------- */
   var SCENE=["ひとりで","友人と","デート","家族と","会社の同僚と","接待"];
